@@ -39,10 +39,12 @@ from .definitions import BondgraphStylesheet, BondgraphSvgDefinitions, CellDLSty
 
 #===============================================================================
 
-SVG_WIDTH = 1200
-SVG_HEIGHT = 800
+SVG_WIDTH  = 2400
+SVG_HEIGHT = 1600
 
 GRID_SPACING = 10
+
+NODE_SIZE = (60, 40)
 
 SPLIT_TEXT_LEN = 10
 
@@ -55,10 +57,6 @@ LAYOUT_METHODS = {
     'kk': nx.kamada_kawai_layout,
     'spring': nx.spring_layout,
 }
-
-#===============================================================================
-
-NODE_SIZE = (100, 70)
 
 #===============================================================================
 
@@ -233,7 +231,7 @@ class Graph2CellDL:
     def __create_diagram(self):
     #==========================
         self.__svg = svg_element('svg', nsmap={None: str(SVG_NS)},
-            viewBox=f'{-int(SVG_WIDTH/2)} {-int(SVG_HEIGHT/2)} {SVG_WIDTH} {SVG_HEIGHT}'
+            viewBox=f'{-int(0.6*SVG_WIDTH)} {-int(0.6*SVG_HEIGHT)} {int(1.2*SVG_WIDTH)} {int(1.2*SVG_HEIGHT)}'
         )
         self.__metadata_element = svg_subelement(self.__svg, 'metadata', {
             'id': CELLDL_METADATA_ID,

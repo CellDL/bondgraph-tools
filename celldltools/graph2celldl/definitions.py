@@ -28,7 +28,7 @@ def svg_subelement(parent: etree.Element, tag: str, *args, **attributes) -> etre
 
 #===============================================================================
 
-EM_SIZE = 16                    # Pixels, sets ``font-size`` in CellDLStylesheet
+EM_SIZE = 12                    # Pixels, sets ``font-size`` in CellDLStylesheet
 INTERFACE_PORT_RADIUS = 4       # pixels
 
 #===============================================================================
