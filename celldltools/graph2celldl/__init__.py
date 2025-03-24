@@ -265,9 +265,3 @@ class Graph2CellDL:
             pretty_print=True, xml_declaration=True)
 
 #===============================================================================
-
-def graph2celldl(G: nx.DiGraph, celldl_file: str, layout_method: str='arf'):
-    celldl = Graph2CellDL(G, layout_method)
-    celldl.save_diagram(Path(celldl_file))
-
-#===============================================================================
