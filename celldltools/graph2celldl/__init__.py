@@ -41,6 +41,8 @@ from .definitions import BondgraphStylesheet, BondgraphSvgDefinitions, CellDLSty
 SVG_WIDTH = 1200
 SVG_HEIGHT = 800
 
+GRID_SPACING = 10
+
 #===============================================================================
 
 LAYOUT_METHODS = {
@@ -66,6 +68,10 @@ def _scaled_vertical_offset(x: float, delta: np.ndarray) -> np.ndarray:
 def _scaled_horizontal_offset(y: float, delta: np.ndarray) -> np.ndarray:
 #========================================================================
     return np.array([y*delta[0]/delta[1], y])
+
+def _grid_align(positions: dict) -> dict:
+#========================================
+    return { key: GRID_SPACING*np.floor(pos/GRID_SPACING + 0.5) for key, pos in positions.items() }
 
 #===============================================================================
 
@@ -168,9 +174,9 @@ class Graph2CellDL:
         layout_params = [G]
         if layout_method == 'bfs':
             layout_params.append(list(G.nodes)[0])
-        self.__positions = nx.rescale_layout_dict(
+        self.__positions = _grid_align(nx.rescale_layout_dict(
             LAYOUT_METHODS.get(layout_method, nx.arf_layout)(*layout_params),
-            scale=min(SVG_WIDTH, SVG_HEIGHT)/2)
+            scale=min(SVG_WIDTH, SVG_HEIGHT)/2))
         self.__components: dict = {}
         for node, properties in G.nodes(data=True):
             self.__add_component(node, properties)
