@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "bondgraph"
+version = "0.0.1"
+description = ""
+authors = ["David Brooks <d.brooks@auckland.ac.nz>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.12,<4.0"
+networkx = "^3.4.2"
+rdflib = "^7.1.3"
+
+[tool.pyright]
+pythonVersion = "3.12"
+venvPath = "."
+venv = ".venv"
