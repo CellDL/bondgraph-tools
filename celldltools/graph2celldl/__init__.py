@@ -20,6 +20,7 @@
 
 import json
 from pathlib import Path
+from typing import Optional
 
 #===============================================================================
 
@@ -43,6 +44,8 @@ SVG_HEIGHT = 800
 
 GRID_SPACING = 10
 
+SPLIT_TEXT_LEN = 10
+
 #===============================================================================
 
 LAYOUT_METHODS = {
@@ -56,8 +59,6 @@ LAYOUT_METHODS = {
 #===============================================================================
 
 NODE_SIZE = (100, 70)
-
-NODE_CORNER_RADIUS = 6
 
 #===============================================================================
 
@@ -76,8 +77,11 @@ def _grid_align(positions: dict) -> dict:
 #===============================================================================
 
 class CellDLComponent:
-    def __init__(self, id: str, centre: np.ndarray):
+    def __init__(self, id: str, centre: np.ndarray, properties: Optional[dict]=None):
         self.__id = id
+        if properties is None:
+            properties = {}
+        self.__label = properties.get('label', id)
         self.__centre = centre
         self.__corner_offsets = [
             np.array([ NODE_SIZE[0]/2,  NODE_SIZE[1]/2]),  # BR
@@ -156,13 +160,35 @@ class CellDLComponent:
 
     def svg(self) -> etree.Element:
     #==============================
-        return svg_element('rect', {
+        svg = svg_element('g', {'id': self.__id, 'class': 'celldl-Component'})
+        svg_subelement(svg, 'rect', {
             'id': self.__id, 'class': 'celldl-Component',
             'x': str(self.__centre[0] + self.__corner_offsets[2][0]),
             'y': str(self.__centre[1] + self.__corner_offsets[2][1]),
-            'width': str(NODE_SIZE[0]), 'height': str(NODE_SIZE[1]),
-            'rx': str(NODE_CORNER_RADIUS), 'ry': str(NODE_CORNER_RADIUS)
+            'width': str(NODE_SIZE[0]), 'height': str(NODE_SIZE[1])
         })
+        label = self.__label
+        # first split on '\n'
+        if len(label) <= SPLIT_TEXT_LEN:   # f(node_width, em_size)
+            text = svg_subelement(svg, 'text', {
+                'x': str(self.__centre[0]),
+                'y': str(self.__centre[1])
+            })
+            text.text = label
+        else:
+            # first split on whitespace
+            labels = label.split('_')
+            # combine back into phrases with len <= MAX
+            y_offset = -(len(labels) - 1)/2
+            for label in labels:
+                text = svg_subelement(svg, 'text', {
+                    'x': str(self.__centre[0]),
+                    'y': str(self.__centre[1]),
+                    'dy': f'{y_offset}em'
+                })
+                text.text = label
+                y_offset += 1
+        return svg
 
 #===============================================================================
 
@@ -199,7 +225,7 @@ class Graph2CellDL:
 
     def __add_component(self, node, properties):
     #===========================================
-        component = CellDLComponent(self.__get_id(), self.__positions[node])
+        component = CellDLComponent(self.__get_id(), self.__positions[node], properties)
         self.__diagram.append(component.svg())
         self.__celldl.add_component(component.id)
         self.__components[node] = component

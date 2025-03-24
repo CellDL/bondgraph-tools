@@ -52,6 +52,9 @@ CELLDL_STYLESHEET_ID = 'celldl-svg-stylesheet'
 
 CellDLStylesheet = '\n'.join([    # Copied from ``@renderer/styles/stylesheet.ts``
     f'svg{{font-size:{EM_SIZE}px}}',
+    # Components
+    '.celldl-Component{fill:#0C4;opacity:0.8;stroke:#44F;rx:6px;ry:6px}',
+    '.celldl-Component>text{fill:#C00;opacity:1;stroke:none;text-anchor:middle;dominant-baseline:middle}',
     # Conduits
     '.celldl-Conduit{z-index:9999}',
     # Connections
