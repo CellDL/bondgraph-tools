@@ -103,15 +103,14 @@ BondgraphSvgDefinitions: list[etree.Element] = etree.fromstring(
 BondgraphStylesheet = '\n'.join([
     # Bondgraph specific
     'svg{--biochemical:#2F6EBA;--electrical:#DE8344;--mechanical:#4EAD5B}',
-    '.bondgraph{color:pink}'
     '.biochemical{color:var(--biochemical)}',
     '.electrical{color:var(--electrical)}',
     '.mechanical{color:var(--mechanical)}',
-    # use var(--colour), setting them in master stylesheet included in <defs> (along with MathJax styles)
-    '.celldl-Connection.bondgraph{marker-end:url(#connection-end-arrow-bondgraph)}',
-    '.celldl-Connection.bondgraph.biochemical{marker-end:url(#connection-end-arrow-biochemical)}',
-    '.celldl-Connection.bondgraph.electrical{marker-end:url(#connection-end-arrow-electrical)}',
-    '.celldl-Connection.bondgraph.mechanical{marker-end:url(#connection-end-arrow-mechanical)}',
+    # use var(--colour), setting them in master stylesheet included in <defs> (along with MathJax styles) */
+    '.celldl-Connection.bondgraph.arrow{marker-end:url(#connection-end-arrow-bondgraph)}',
+    '.celldl-Connection.bondgraph.biochemical.arrow{marker-end:url(#connection-end-arrow-biochemical)}',
+    '.celldl-Connection.bondgraph.electrical.arrow{marker-end:url(#connection-end-arrow-electrical)}',
+    '.celldl-Connection.bondgraph.mechanical.arrow{marker-end:url(#connection-end-arrow-mechanical)}'
 ])
 
 #===============================================================================
