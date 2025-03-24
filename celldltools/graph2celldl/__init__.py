@@ -45,9 +45,9 @@ SVG_HEIGHT = 800
 
 LAYOUT_METHODS = {
     'arf': nx.arf_layout,
+    'bfs': nx.bfs_layout,
     'force': nx.forceatlas2_layout,
     'kk': nx.kamada_kawai_layout,
-    'planar': nx.planar_layout,
     'spring': nx.spring_layout,
 }
 
@@ -161,12 +161,15 @@ class CellDLComponent:
 #===============================================================================
 
 class Graph2CellDL:
-    def __init__(self, G: nx.DiGraph, layout_method: str='arf'):
+    def __init__(self, G: nx.DiGraph, layout_method: str='bfs'):
         self.__celldl = CellDLGraph()
         self.__last_id = 0
         self.__create_diagram()
+        layout_params = [G]
+        if layout_method == 'bfs':
+            layout_params.append(list(G.nodes)[0])
         self.__positions = nx.rescale_layout_dict(
-            LAYOUT_METHODS.get(layout_method, nx.arf_layout)(G),
+            LAYOUT_METHODS.get(layout_method, nx.arf_layout)(*layout_params),
             scale=min(SVG_WIDTH, SVG_HEIGHT)/2)
         self.__components: dict = {}
         for node, properties in G.nodes(data=True):
