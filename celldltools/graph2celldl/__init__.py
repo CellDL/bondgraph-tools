@@ -73,11 +73,11 @@ class CellDLComponent:
     def __init__(self, id: str, centre: np.ndarray):
         self.__id = id
         self.__centre = centre
-        top_left = np.array([centre[0]-NODE_SIZE[0]/2, centre[0]-NODE_SIZE[1]/2])
-        bottom_right = np.array([centre[0]+NODE_SIZE[0]/2, centre[0]+NODE_SIZE[1]/2])
         self.__corner_offsets = [
-            bottom_right, np.array([top_left[0], bottom_right[1]]),
-            top_left, np.array([bottom_right[0], top_left[1]])
+            np.array([ NODE_SIZE[0]/2,  NODE_SIZE[1]/2]),  # BR
+            np.array([ NODE_SIZE[0]/2, -NODE_SIZE[1]/2]),  # TR
+            np.array([-NODE_SIZE[0]/2, -NODE_SIZE[1]/2]),  # TL
+            np.array([-NODE_SIZE[0]/2,  NODE_SIZE[1]/2])   # BL
         ]
 
     @property
@@ -152,7 +152,8 @@ class CellDLComponent:
     #==============================
         return svg_element('rect', {
             'id': self.__id, 'class': 'celldl-Component',
-            'x': str(self.__corner_offsets[2][0]), 'y': str(self.__corner_offsets[2][1]),
+            'x': str(self.__centre[0] + self.__corner_offsets[2][0]),
+            'y': str(self.__centre[1] + self.__corner_offsets[2][1]),
             'width': str(NODE_SIZE[0]), 'height': str(NODE_SIZE[1]),
             'rx': str(NODE_CORNER_RADIUS), 'ry': str(NODE_CORNER_RADIUS)
         })
