@@ -9,6 +9,7 @@ package-mode = false
 python = ">=3.12,<4.0"
 networkx = "^3.4.2"
 rdflib = "^7.1.3"
+celldltools = { path = "../CellDL-electron/tools", develop = true }
 
 [tool.pyright]
 pythonVersion = "3.12"
