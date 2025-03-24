@@ -18,7 +18,6 @@
 #
 #===============================================================================
 
-import json
 from pathlib import Path
 from typing import Optional
 
@@ -132,7 +131,7 @@ class CellDLComponent:
         #    0   1   2   3
         #
         delta = point - self.__centre
-        if delta[0] < 0:
+        if delta[0] < 0:    # left
             if delta[1] < 0:    # TL
                 if self.__corner_offsets[2][0]*delta[1] < self.__corner_offsets[2][1]*delta[0]:
                     offset = _scaled_vertical_offset(self.__corner_offsets[2][0], delta)
@@ -143,7 +142,7 @@ class CellDLComponent:
                     offset = _scaled_horizontal_offset(self.__corner_offsets[3][1], delta)
                 else:
                     offset = _scaled_vertical_offset(self.__corner_offsets[3][0], delta)
-        else:
+        else:               # right
             if delta[1] < 0:    # TR
                 if self.__corner_offsets[1][0]*delta[1] < self.__corner_offsets[1][1]*delta[0]:
                     offset = _scaled_horizontal_offset(self.__corner_offsets[1][1], delta)
@@ -257,8 +256,8 @@ class Graph2CellDL:
         self.__last_id += 1
         return f'ID-{self.__last_id:08d}'
 
-    def save_diagram(self, path: Path):
-    #==================================
+    def save_diagram(self, path: str|Path):
+    #======================================
         self.__metadata_element.text = etree.CDATA(self.__celldl.as_turtle())
         svg_tree = etree.ElementTree(self.__svg)
         svg_tree.write(path,
