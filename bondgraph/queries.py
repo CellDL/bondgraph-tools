@@ -1,4 +1,5 @@
 #===============================================================================
+#===============================================================================
 
 MODEL_PREFIXES = """
 PREFIX bg: <http://celldl.org/ontologies/bond-graph#>
@@ -43,14 +44,24 @@ PREFIX tpl: <http://celldl.org/ontologies/model-template#>
 TEMPLATE_QUERY = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?template ?label ?model ?parameter
+SELECT DISTINCT ?template ?model ?label
 WHERE {{
     ?template
         a tpl:Template ;
         bg:model ?model .
     OPTIONAL {{ ?template rdfs:label ?label }}
-    OPTIONAL {{ ?template tpl:parameter ?parameter }}
+}}"""
 
+#===============================================================================
+
+TEMPLATE_PARAMETERS_QUERY = f"""
+{TEMPLATE_PREFIXES}
+
+SELECT DISTINCT ?template ?parameter
+WHERE {{
+    ?template
+        a tpl:Template ;
+        tpl:parameter ?parameter  .
 }}"""
 
 #===============================================================================
@@ -58,14 +69,24 @@ WHERE {{
 TEMPLATE_PORTS_QUERY = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?template ?model ?port
+SELECT DISTINCT ?template ?port
 WHERE {{
     ?template
         a tpl:Template ;
-        bg:model ?model ;
         tpl:port ?port .
-}}
-GROUP BY ?template ?model"""
+}}"""
+
+#===============================================================================
+
+TEMPLATE_STATES_QUERY = f"""
+{TEMPLATE_PREFIXES}
+
+SELECT DISTINCT ?template ?state
+WHERE {{
+    ?template
+        a tpl:Template ;
+        tpl:state ?state  .
+}}"""
 
 #===============================================================================
 
@@ -77,7 +98,7 @@ WHERE {{
     ?port
         a tpl:Port ;
         bg:units ?units .
-    OPTIONAL {{ ?quantity rdfs:label ?label }}
+    OPTIONAL {{ ?port rdfs:label ?label }}
 }}
 """
 
@@ -88,8 +109,11 @@ PORT_CLASSES_QUERY = f"""
 
 SELECT DISTINCT ?port ?cls
 WHERE {{
-    ?port a ?cls .
-}} GROUP BY ?port"""
+    ?port
+        a tpl:Port ;
+        a ?cls .
+    FILTER(?cls != tpl:Port)
+}}"""
 
 #===============================================================================
 
@@ -98,8 +122,10 @@ PORT_PARAMETERS_QUERY = f"""
 
 SELECT DISTINCT ?port ?parameter
 WHERE {{
-    ?port tpl:parameter ?parameter .
-}} GROUP BY ?port"""
+    ?port
+        a tpl:Port ;
+        tpl:parameter ?parameter .
+}}"""
 
 #===============================================================================
 
@@ -108,12 +134,14 @@ PORT_STATES_QUERY = f"""
 
 SELECT DISTINCT ?port ?state
 WHERE {{
-    ?port tpl:state ?state .
-}} GROUP BY ?port"""
+    ?port
+        a tpl:Port ;
+        tpl:state ?state .
+}}"""
 
 #===============================================================================
 
-QUANTITIES_QUERY = """
+QUANTITIES_QUERY = f"""
 {TEMPLATE_PREFIXES}
 
 SELECT DISTINCT ?quantity ?units ?label
@@ -121,9 +149,8 @@ WHERE {{
     ?quantity
         a bg:Quantity ;
         bg:units ?units .
-    OPTIONAL { ?quantity rdfs:label ?label }
-}}
-"""
+    OPTIONAL {{ ?quantity rdfs:label ?label }}
+}}"""
 
 #===============================================================================
 #===============================================================================
