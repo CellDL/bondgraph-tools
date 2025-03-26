@@ -222,7 +222,7 @@ class TemplateRegistry:
             (uri_key, class_key) = result.vars
             for row in result.bindings:
                 uri: URIRef = row[uri_key]                  # type: ignore
-                cls: URIRef = row.get(state_key)            # type: ignore
+                cls: URIRef = row.get(class_key)            # type: ignore
                 if uri in self.__ports:
                     self.__ports[uri].add_class(cls)
         result = rdf_graph.query(PORT_PARAMETERS_QUERY)
