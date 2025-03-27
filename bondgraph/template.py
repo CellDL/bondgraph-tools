@@ -27,80 +27,33 @@ from rdflib import Literal, URIRef
 
 #===============================================================================
 
-from .queries import TEMPLATE_QUERY, TEMPLATE_PARAMETERS_QUERY, TEMPLATE_PORTS_QUERY, TEMPLATE_STATES_QUERY
-from .queries import PORTS_QUERY, PORT_CLASSES_QUERY, PORT_PARAMETERS_QUERY, PORT_STATES_QUERY
+from .bondgraph import BondgraphModel, BondgraphNode
+
+from .queries import BONDGRAPH_MODEL_BONDS, BONDGRAPH_MODEL_PARAMETERS, BONDGRAPH_MODEL_QUERY, BONDGRAPH_MODEL_STATES
+from .queries import TEMPLATE_QUERY, TEMPLATE_PORTS_QUERY
 from .queries import QUANTITIES_QUERY
+
+from .units import UCUMUnit
 
 #===============================================================================
 
-from .queries import MODEL_PREFIXES, TEMPLATE_PREFIXES
+from .queries import SPEC_PREFIXES, TEMPLATE_PREFIXES
 from .namespaces import NamespaceMap
 
 NS_MAP = (NamespaceMap.fromSparqlPrefixes(TEMPLATE_PREFIXES)
-                      .merge_namespaces(NamespaceMap.fromSparqlPrefixes(MODEL_PREFIXES)))
-
-#===============================================================================
-"""
-
-NB.need full URIRef in order to compare and lookup templates
-
-['template', 'label', 'model', 'parameter']
-('lib:segment-template', 'Vascular segment template', 'lib:segment-bondgraph', 'lib:resistance')
-
-
-['template', 'model', 'port']
-('lib:segment-template', 'lib:segment-bondgraph', 'lib:blood-pressure_1')
-('lib:segment-template', 'lib:segment-bondgraph', 'lib:blood-pressure_2')
-
-['port', 'units', 'label']
-('lib:blood-pressure_1', '"kPa"^^cdt:ucumunit', 'Input pressure')
-('lib:blood-pressure_2', '"kPa"^^cdt:ucumunit', 'output pressure')
-
-['port', 'cls']
-('lib:blood-pressure_1', 'tpl:Port')
-('lib:blood-pressure_1', 'bg:ZeroStorageNode')
-('lib:blood-pressure_2', 'tpl:Port')
-('lib:blood-pressure_2', 'bg:ZeroStorageNode')
-
-['port', 'parameter']
-('lib:blood-pressure_1', 'lib:elastance')
-('lib:blood-pressure_1', 'lib:fixed-volume')
-('lib:blood-pressure_2', 'lib:elastance')
-('lib:blood-pressure_2', 'lib:fixed-volume')
-
-['port', 'state']
-('lib:blood-pressure_1', 'lib:volume')
-('lib:blood-pressure_2', 'lib:volume')
-
-
-['quantity', 'units', 'label']
-('lib:elastance', '"kPa/L"^^cdt:ucumunit', 'Elastance')
-('lib:fixed-volume', '"L"^^cdt:ucumunit', 'Fixed volume')
-('lib:volume', '"L"^^cdt:ucumunit', 'Volume')
-('lib:resistance', '"kPa.s/L"^^cdt:ucumunit', 'Segment resistance')
-"""
-
-#===============================================================================
-
-class UcumUnit:
-    def __init__(self, units: Literal):
-        self.__units = units
-        # check datatype == cdt:ucumunit
-
-    def __str__(self):
-        return str(self.__units)
+                      .merge_namespaces(NamespaceMap.fromSparqlPrefixes(SPEC_PREFIXES)))
 
 #===============================================================================
 
 class BondgraphQuantity:
     def __init__(self, uri: URIRef, units: Literal, label: Optional[Literal]=None):
         self.__uri = uri
-        self.__units = UcumUnit(units)
+        self.__units = UCUMUnit(units)
         self.__label = label if label is not None else NS_MAP.curie(uri)
 
     @property
-    def label(self) -> str:
-        return str(self.__label)
+    def label(self) -> Optional[str]:
+        return str(self.__label) if self.__label else None
 
     @property
     def units(self):
@@ -109,106 +62,41 @@ class BondgraphQuantity:
     @property
     def uri(self):
         return self.__uri
-
-#===============================================================================
-
-class BondgraphPort:
-    def __init__(self, uri: URIRef, units: Literal, label: Optional[Literal]=None):
-        self.__uri = uri
-        self.__units = UcumUnit(units)
-        self.__label = label if label is not None else NS_MAP.curie(uri)
-        self.__classes: list[URIRef] = []
-        self.__parameters: list[BondgraphQuantity] = []
-        self.__states: list[BondgraphQuantity] = []
-
-    @property
-    def classes(self):
-        return self.__classes
-
-    @property
-    def label(self) -> str:
-        return str(self.__label)
-
-    @property
-    def parameters(self):
-        return self.__parameters
-
-    @property
-    def states(self):
-        return self.__states
-
-    @property
-    def units(self):
-        return str(self.__units)
-
-    @property
-    def uri(self):
-        return self.__uri
-
-    def add_class(self, cls: URIRef):
-    #================================
-        self.__classes.append(cls)
-
-    def add_state(self, state: BondgraphQuantity):
-    #=============================================
-        self.__states.append(state)
-
-    def add_parameter(self, parameter: BondgraphQuantity):
-    #=====================================================
-        self.__parameters.append(parameter)
 
 #===============================================================================
 
 class BondgraphTemplate:
-    def __init__(self, uri: URIRef, model: URIRef, label: Optional[Literal]=None):
+    def __init__(self, uri: URIRef, model: Optional[BondgraphModel], label: Optional[Literal]=None):
         self.__uri = uri
         self.__model = model
         self.__label = label if label is not None else NS_MAP.curie(uri)
-        self.__ports: list[BondgraphPort] = []
-        self.__parameters: list[BondgraphQuantity] = []
-        self.__states: list[BondgraphQuantity] = []
+        self.__ports: dict[URIRef, BondgraphNode] = {}
 
-    @property
-    def label(self) -> str:
-        return str(self.__label)
+    def label(self) -> Optional[str]:
+        return str(self.__label) if self.__label else None
 
     @property
     def model(self):
         return self.__model
 
     @property
-    def parameters(self):
-        return self.__parameters
-
-    @property
     def ports(self):
         return self.__ports
-
-    @property
-    def states(self):
-        return self.__states
 
     @property
     def uri(self):
         return self.__uri
 
-    def add_port(self, port: BondgraphPort):
-    #=======================================
-        self.__ports.append(port)
-
-    def add_state(self, state: BondgraphQuantity):
-    #=============================================
-        self.__states.append(state)
-
-    def add_parameter(self, parameter: BondgraphQuantity):
-    #=====================================================
-        self.__parameters.append(parameter)
+    def add_port(self, port: URIRef):
+    #================================
+        if self.model is not None and (node := self.model.get_node(port)) is not None:
+            self.__ports[port] = node
 
 #===============================================================================
 
 class TemplateRegistry:
     def __init__(self, template_file: str):
-        self.__ports: dict[URIRef, BondgraphPort] = {}
+        self.__models: dict[URIRef, BondgraphModel] = {}
         self.__quantities: dict[URIRef, BondgraphQuantity] = {}
         self.__templates: dict[URIRef, BondgraphTemplate] = {}
         self.load_templates(template_file)
@@ -218,47 +106,64 @@ class TemplateRegistry:
         rdf_graph = rdflib.Graph()
         rdf_graph.parse(template_file, format='turtle')
         self.__load_quantities(rdf_graph)
-        self.__load_ports(rdf_graph)
+        self.__load_models(rdf_graph)
         self.__load_templates(rdf_graph)
 
     def get_template(self, template: URIRef) -> Optional[BondgraphTemplate]:
     #=======================================================================
         return self.__templates.get(template)
 
-    def __load_ports(self, rdf_graph: rdflib.Graph):
-    #===============================================
-        result = rdf_graph.query(PORTS_QUERY)
+    def __load_models(self, rdf_graph: rdflib.Graph):
+    #================================================
+        result = rdf_graph.query(BONDGRAPH_MODEL_QUERY)
         if result.vars is not None:
-            (uri_key, units_key, label_key) = result.vars
+            (model_key, node_key, type_key, label_key, units_key) = result.vars
+            model = None
             for row in result.bindings:
-                uri: URIRef = row[uri_key]                  # type: ignore
-                units: Literal = row.get(units_key)         # type: ignore
-                label: Optional[Literal] = row[label_key]   # type: ignore
-                self.__ports[uri] = BondgraphPort(uri, units, label)
-        result = rdf_graph.query(PORT_CLASSES_QUERY)
+                model_uri: URIRef = row[model_key]          # type: ignore
+                node_uri: URIRef = row[node_key]            # type: ignore
+                type: URIRef = row[type_key]                # type: ignore
+                label: Optional[Literal] = row.get(label_key)   # type: ignore
+                units: Optional[Literal] = row.get(units_key)   # type: ignore
+                if model is None or model_uri != model.uri:
+                    model = BondgraphModel(model_uri)
+                    self.__models[model_uri] = model
+                    model_uri = model.uri
+                model.add_node(node_uri, type, label=label, units=units)
+        result = rdf_graph.query(BONDGRAPH_MODEL_BONDS)
         if result.vars is not None:
-            (uri_key, class_key) = result.vars
+            (model_key, bond_key, source_key, target_key) = result.vars
             for row in result.bindings:
-                uri: URIRef = row[uri_key]                  # type: ignore
-                cls: URIRef = row.get(class_key)            # type: ignore
-                if uri in self.__ports:
-                    self.__ports[uri].add_class(cls)
-        result = rdf_graph.query(PORT_PARAMETERS_QUERY)
+                model_uri: URIRef = row[model_key]          # type: ignore
+                bond_uri: URIRef = row[bond_key]            # type: ignore
+                source_uri: URIRef = row[source_key]        # type: ignore
+                target_uri: URIRef = row[target_key]        # type: ignore
+                if (model := self.__models.get(model_uri)) is not None:
+                    if ((source := model.get_node(source_uri)) is not None
+                    and (target := model.get_node(target_uri)) is not None):
+                        model.add_bond(bond_uri, source, target)
+        result = rdf_graph.query(BONDGRAPH_MODEL_STATES)
         if result.vars is not None:
-            (uri_key, parameter_key) = result.vars
+            (model_key, node_key, state_key) = result.vars
             for row in result.bindings:
-                uri: URIRef = row[uri_key]                  # type: ignore
-                parameter: URIRef = row.get(parameter_key)  # type: ignore
-                if uri in self.__ports and parameter in self.__quantities:
-                    self.__ports[uri].add_parameter(self.__quantities[parameter])
-        result = rdf_graph.query(PORT_STATES_QUERY)
-        if result.vars is not None:
-            (uri_key, state_key) = result.vars
-            for row in result.bindings:
-                uri: URIRef = row[uri_key]                  # type: ignore
+                model_uri: URIRef = row[model_key]          # type: ignore
+                node_uri: URIRef = row[node_key]            # type: ignore
                 state: URIRef = row.get(state_key)          # type: ignore
-                if uri in self.__ports and state in self.__quantities:
-                    self.__ports[uri].add_state(self.__quantities[state])
+                if (model := self.__models.get(model_uri)) is not None:
+                    if ((node := model.get_node(node_uri)) is not None
+                     and state in self.__quantities):
+                        node.add_state(self.__quantities[state])
+        result = rdf_graph.query(BONDGRAPH_MODEL_PARAMETERS)
+        if result.vars is not None:
+            (model_key, node_key, parameter_key) = result.vars
+            for row in result.bindings:
+                model_uri: URIRef = row[model_key]          # type: ignore
+                node_uri: URIRef = row[node_key]            # type: ignore
+                parameter: URIRef = row.get(parameter_key)  # type: ignore
+                if (model := self.__models.get(model_uri)) is not None:
+                    if ((node := model.get_node(node_uri)) is not None
+                     and parameter in self.__quantities):
+                        node.add_parameter(self.__quantities[parameter])
 
     def __load_quantities(self, rdf_graph: rdflib.Graph):
     #====================================================
@@ -268,7 +173,7 @@ class TemplateRegistry:
             for row in result.bindings:
                 uri: URIRef = row[uri_key]                  # type: ignore
                 units: Literal = row.get(units_key)         # type: ignore
-                label: Optional[Literal] = row[label_key]   # type: ignore
+                label: Optional[Literal] = row.get(label_key)   # type: ignore
                 self.__quantities[uri] = BondgraphQuantity(uri, units, label)
 
     def __load_templates(self, rdf_graph: rdflib.Graph):
@@ -278,32 +183,16 @@ class TemplateRegistry:
             (uri_key, model_key, label_key) = qres.vars
             for row in qres.bindings:
                 uri: URIRef = row[uri_key]                  # type: ignore
-                model: URIRef = row[model_key]              # type: ignore
-                label: Optional[Literal] = row[label_key]   # type: ignore
-                self.__templates[uri] = BondgraphTemplate(uri, model, label)
-        result = rdf_graph.query(TEMPLATE_PARAMETERS_QUERY)
-        if result.vars is not None:
-            (uri_key, parameter_key) = result.vars
-            for row in result.bindings:
-                uri: URIRef = row[uri_key]                 # type: ignore
-                parameter: URIRef = row.get(parameter_key)          # type: ignore
-                if uri in self.__templates and parameter in self.__quantities:
-                    self.__templates[uri].add_parameter(self.__quantities[parameter])
+                model_uri: URIRef = row[model_key]          # type: ignore
+                label: Optional[Literal] = row.get(label_key)   # type: ignore
+                self.__templates[uri] = BondgraphTemplate(uri, self.__models.get(model_uri), label)
         result = rdf_graph.query(TEMPLATE_PORTS_QUERY)
         if result.vars is not None:
             (uri_key, port_key) = result.vars
             for row in result.bindings:
                 uri: URIRef = row[uri_key]                 # type: ignore
                 port: URIRef = row.get(port_key)           # type: ignore
-                if uri in self.__templates and port in self.__ports:
-                    self.__templates[uri].add_port(self.__ports[port])
-        result = rdf_graph.query(TEMPLATE_STATES_QUERY)
-        if result.vars is not None:
-            (uri_key, state_key) = result.vars
-            for row in result.bindings:
-                uri: URIRef = row[uri_key]                  # type: ignore
-                state: URIRef = row.get(state_key)          # type: ignore
-                if uri in self.__templates and state in self.__quantities:
-                    self.__templates[uri].add_state(self.__quantities[state])
+                if (template := self.__templates.get(uri)) is not None:
+                    template.add_port(port)
 
 #===============================================================================

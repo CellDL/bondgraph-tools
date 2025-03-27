@@ -22,7 +22,7 @@ from typing import Optional, Self
 
 #===============================================================================
 
-import rdflib
+from rdflib import BNode, Literal, URIRef
 
 #===============================================================================
 
@@ -80,14 +80,21 @@ class NamespaceMap:
 
     def simplify(self, term):
     #========================
-        if isinstance(term, rdflib.URIRef):
+        if isinstance(term, URIRef):
             return self.curie(term)
-        elif isinstance(term, rdflib.BNode):
+        elif isinstance(term, BNode):
             return str(term)
-        elif isinstance(term, rdflib.Literal):
+        elif isinstance(term, Literal):
             if (dt := term.datatype) is not None:
                 return f'"{str(term)}"^^{self.simplify(dt)}'
             return str(term)
         return term
+
+    def uri(self, curie: str) -> URIRef:
+    #===================================
+        parts = curie.split(':', 1)
+        if len(parts) == 2 and parts[0] in self.__prefix_dict:
+            return URIRef(f'{self.__prefix_dict[parts[0]]}{parts[1]}')
+        return URIRef(curie)
 
 #===============================================================================

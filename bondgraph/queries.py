@@ -18,7 +18,7 @@
 #
 #===============================================================================
 
-MODEL_PREFIXES = """
+SPEC_PREFIXES = """
 PREFIX bg: <http://celldl.org/ontologies/bond-graph#>
 PREFIX cdt: <https://w3id.org/cdt/>
 PREFIX lib: <http://celldl.org/templates/vascular#>
@@ -27,8 +27,8 @@ PREFIX tpl: <http://celldl.org/ontologies/model-template#>
 
 #===============================================================================
 
-MODEL_QUERY = f"""
-{MODEL_PREFIXES}
+SPECIFICATION_QUERY = f"""
+{SPEC_PREFIXES}
 
 SELECT DISTINCT ?model ?component ?template ?port ?node
 WHERE {{
@@ -58,104 +58,64 @@ PREFIX tpl: <http://celldl.org/ontologies/model-template#>
 
 #===============================================================================
 
-TEMPLATE_QUERY = f"""
+BONDGRAPH_MODEL_BONDS = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?template ?model ?label
+SELECT DISTINCT ?model ?bond ?source ?target
 WHERE {{
-    ?template
-        a tpl:Template ;
-        bg:model ?model .
-    OPTIONAL {{ ?template rdfs:label ?label }}
+    ?model a bg:Model .
+    ?bond
+        a bg:Bond ;
+        bg:model ?model ;
+        bg:source ?source ;
+        bg:target ?target .
 }}"""
 
 #===============================================================================
 
-TEMPLATE_PARAMETERS_QUERY = f"""
+BONDGRAPH_MODEL_PARAMETERS = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?template ?parameter
+SELECT DISTINCT ?model ?node ?parameter
 WHERE {{
-    ?template
-        a tpl:Template ;
+    ?model a bg:Model .
+    ?node
+        a ?type ;
         tpl:parameter ?parameter  .
+    FILTER (?type IN (bg:OneResistanceNode, bg:ZeroStorageNode))
 }}"""
 
 #===============================================================================
 
-TEMPLATE_PORTS_QUERY = f"""
+BONDGRAPH_MODEL_STATES = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?template ?port
+SELECT DISTINCT ?model ?node ?state
 WHERE {{
-    ?template
-        a tpl:Template ;
-        tpl:port ?port .
-}}"""
-
-#===============================================================================
-
-TEMPLATE_STATES_QUERY = f"""
-{TEMPLATE_PREFIXES}
-
-SELECT DISTINCT ?template ?state
-WHERE {{
-    ?template
-        a tpl:Template ;
+    ?model a bg:Model .
+    ?node
+        a ?type ;
         tpl:state ?state  .
+    FILTER (?type IN (bg:OneResistanceNode, bg:ZeroStorageNode))
 }}"""
 
 #===============================================================================
 
-PORTS_QUERY = f"""
+BONDGRAPH_MODEL_QUERY = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?port ?units ?label
+SELECT DISTINCT ?model ?node ?type ?label ?units
 WHERE {{
-    ?port
-        a tpl:Port ;
-        bg:units ?units .
-    OPTIONAL {{ ?port rdfs:label ?label }}
-}}
-"""
+    ?model a bg:Model .
+    ?node
+        a ?type ;
+        bg:model ?model .
+    OPTIONAL {{ ?node rdfs:label ?label }}
+    OPTIONAL {{ ?node bg:units ?units }}
+    FILTER (?type IN (bg:OneResistanceNode, bg:ZeroStorageNode))
+}} ORDER BY ?model"""
 
 #===============================================================================
-
-PORT_CLASSES_QUERY = f"""
-{TEMPLATE_PREFIXES}
-
-SELECT DISTINCT ?port ?cls
-WHERE {{
-    ?port
-        a tpl:Port ;
-        a ?cls .
-    FILTER(?cls != tpl:Port)
-}}"""
-
-#===============================================================================
-
-PORT_PARAMETERS_QUERY = f"""
-{TEMPLATE_PREFIXES}
-
-SELECT DISTINCT ?port ?parameter
-WHERE {{
-    ?port
-        a tpl:Port ;
-        tpl:parameter ?parameter .
-}}"""
-
-#===============================================================================
-
-PORT_STATES_QUERY = f"""
-{TEMPLATE_PREFIXES}
-
-SELECT DISTINCT ?port ?state
-WHERE {{
-    ?port
-        a tpl:Port ;
-        tpl:state ?state .
-}}"""
-
 #===============================================================================
 
 QUANTITIES_QUERY = f"""
@@ -167,6 +127,33 @@ WHERE {{
         a bg:Quantity ;
         bg:units ?units .
     OPTIONAL {{ ?quantity rdfs:label ?label }}
+}}"""
+
+#===============================================================================
+#===============================================================================
+
+TEMPLATE_QUERY = f"""
+{TEMPLATE_PREFIXES}
+
+SELECT DISTINCT ?template ?model ?label
+WHERE {{
+    ?template
+        a tpl:Template ;
+        bg:model ?model .
+    OPTIONAL {{ ?template rdfs:label ?label }}
+}}"""
+
+
+#===============================================================================
+
+TEMPLATE_PORTS_QUERY = f"""
+{TEMPLATE_PREFIXES}
+
+SELECT DISTINCT ?template ?port
+WHERE {{
+    ?template
+        a tpl:Template ;
+        tpl:port ?port .
 }}"""
 
 #===============================================================================

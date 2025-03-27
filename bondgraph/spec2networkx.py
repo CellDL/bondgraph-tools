@@ -27,7 +27,7 @@ import rdflib
 
 #===============================================================================
 
-from .queries import MODEL_QUERY, MODEL_PREFIXES, TEMPLATE_PREFIXES
+from .queries import SPECIFICATION_QUERY, SPEC_PREFIXES, TEMPLATE_PREFIXES
 from .namespaces import NamespaceMap
 
 #===============================================================================
@@ -39,7 +39,7 @@ from .namespaces import NamespaceMap
 #===============================================================================
 
 NS_MAP = (NamespaceMap.fromSparqlPrefixes(TEMPLATE_PREFIXES)
-                      .merge_namespaces(NamespaceMap.fromSparqlPrefixes(MODEL_PREFIXES)))
+                      .merge_namespaces(NamespaceMap.fromSparqlPrefixes(SPEC_PREFIXES)))
 
 #===============================================================================
 
@@ -48,7 +48,7 @@ def bg_spec_to_networkx(bg_spec: str) -> nx.DiGraph:
     g.parse(bg_spec, format='turtle')
     NS_MAP.add_namespace('', f'{g.identifier}#')
     G = nx.DiGraph()
-    qres: rdflib.query.Result = g.query(MODEL_QUERY)
+    qres: rdflib.query.Result = g.query(SPECIFICATION_QUERY)
     if qres.vars is not None:
         model = None
         component = None
