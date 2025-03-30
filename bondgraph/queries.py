@@ -48,6 +48,17 @@ ORDER BY ?model ?component"""
 #===============================================================================
 #===============================================================================
 
+BONDGRAPH_NODE_TYPES = [
+    'bg:OneNode',
+    'bg:OneResistanceNode',
+    'bg:ResistanceNode',
+    'bg:StorageNode'
+    'bg:ZeroNode'
+    'bg:ZeroStorageNode'
+]
+
+#===============================================================================
+
 TEMPLATE_PREFIXES = """
 PREFIX : <http://celldl.org/templates/vascular#>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
@@ -82,7 +93,7 @@ WHERE {{
     ?node
         a ?type ;
         tpl:parameter ?parameter  .
-    FILTER (?type IN (bg:OneResistanceNode, bg:ZeroStorageNode))
+    FILTER (?type IN ({', '.join(BONDGRAPH_NODE_TYPES)}))
 }}"""
 
 #===============================================================================
@@ -96,7 +107,7 @@ WHERE {{
     ?node
         a ?type ;
         tpl:state ?state  .
-    FILTER (?type IN (bg:OneResistanceNode, bg:ZeroStorageNode))
+    FILTER (?type IN ({', '.join(BONDGRAPH_NODE_TYPES)}))
 }}"""
 
 #===============================================================================
@@ -112,7 +123,7 @@ WHERE {{
         bg:model ?model .
     OPTIONAL {{ ?node rdfs:label ?label }}
     OPTIONAL {{ ?node bg:units ?units }}
-    FILTER (?type IN (bg:OneResistanceNode, bg:ZeroStorageNode))
+    FILTER (?type IN ({', '.join(BONDGRAPH_NODE_TYPES)}))
 }} ORDER BY ?model"""
 
 #===============================================================================
