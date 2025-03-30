@@ -87,10 +87,10 @@ class BondgraphTemplate:
     def uri(self):
         return self.__uri
 
-    def add_port(self, port: URIRef):
-    #================================
-        if self.model is not None and (node := self.model.get_node(port)) is not None:
-            self.__ports[port] = node
+    def add_port(self, node_uri: URIRef):
+    #====================================
+        if self.model is not None and (node := self.model.get_node(node_uri)) is not None:
+            self.__ports[node_uri] = node
 
 #===============================================================================
 
@@ -188,11 +188,11 @@ class TemplateRegistry:
                 self.__templates[uri] = BondgraphTemplate(uri, self.__models.get(model_uri), label)
         result = rdf_graph.query(TEMPLATE_PORTS_QUERY)
         if result.vars is not None:
-            (uri_key, port_key) = result.vars
+            (uri_key, node_key) = result.vars
             for row in result.bindings:
                 uri: URIRef = row[uri_key]                 # type: ignore
-                port: URIRef = row.get(port_key)           # type: ignore
+                node: URIRef = row.get(node_key)           # type: ignore
                 if (template := self.__templates.get(uri)) is not None:
-                    template.add_port(port)
+                    template.add_port(node)
 
 #===============================================================================

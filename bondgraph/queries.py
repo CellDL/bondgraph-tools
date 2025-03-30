@@ -149,11 +149,11 @@ WHERE {{
 TEMPLATE_PORTS_QUERY = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?template ?port
+SELECT DISTINCT ?template ?node
 WHERE {{
     ?template
         a tpl:Template ;
-        tpl:port ?port .
+        tpl:port ?node .
 }}"""
 
 #===============================================================================
