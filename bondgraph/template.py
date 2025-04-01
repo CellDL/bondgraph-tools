@@ -113,9 +113,7 @@ class TemplateRegistry:
                 source_uri: URIRef = row[source_key]        # type: ignore
                 target_uri: URIRef = row[target_key]        # type: ignore
                 if (model := self.__models.get(model_uri)) is not None:
-                    if ((source := model.get_node(source_uri)) is not None
-                    and (target := model.get_node(target_uri)) is not None):
-                        model.add_bond(bond_uri, source, target)
+                    model.add_bond(bond_uri, source_uri, target_uri)
         result = rdf_graph.query(BONDGRAPH_MODEL_QUANTITIES)
         if result.vars is not None:
             (model_key, node_key, quantity_key) = result.vars

@@ -160,11 +160,13 @@ class BondgraphModel:
         self.__nodes[node_uri] = node
         return node
 
-    def add_bond(self, uri: URIRef, node_0: BondgraphNode, node_1: BondgraphNode) -> BondgraphBond:
-    #==============================================================================================
-        bond = BondgraphBond(uri, node_0, node_1)
-        self.__bonds[uri] = bond
-        return bond
+    def add_bond(self, uri: URIRef, node_0: URIRef, node_1: URIRef) -> Optional[BondgraphBond]:
+    #==========================================================================================
+        if ((n0 := self.get_node(node_0)) is not None
+        and (n1 := self.get_node(node_1)) is not None):
+            bond = BondgraphBond(uri, n0, n1)
+            self.__bonds[uri] = bond
+            return bond
 
     def get_node(self, node_uri: URIRef) -> Optional[BondgraphNode]:
     #===============================================================
