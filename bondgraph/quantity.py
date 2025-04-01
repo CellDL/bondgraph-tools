@@ -54,12 +54,7 @@ class Units:
         if isinstance(units, str):
             units = unit_registry[units]
         self.__units = pint.Quantity(1, units)
-        name = (str(self.__units.u).replace(' * ', '_')
-                                   .replace(' / ', '_per_')
-                                   .replace(' ** 2', '_squared'))
-        for fullname, replacement in SUBSTITUTIONS.items():
-            name = name.replace(fullname, replacement)
-        self.__name = name
+        self.__name = Units.normalise_name(str(self.__units.u))
 
     @classmethod
     def from_ucum(cls, ucum_units: Literal|str) -> Self:
@@ -68,6 +63,16 @@ class Units:
          and ucum_units.datatype is not None):
             raise TypeError(f'Units value has unexpected datatype: {ucum_units.datatype}')
         return cls(unit_registry.from_ucum(str(ucum_units)))
+
+    @staticmethod
+    def normalise_name(name: str) -> str:
+    #====================================
+        name = (name.replace(' * ', '_')
+                    .replace(' / ', '_per_')
+                    .replace(' ** 2', '_squared'))
+        for fullname, replacement in SUBSTITUTIONS.items():
+            name = name.replace(fullname, replacement)
+        return name
 
     def __eq__(self, other):
     #=======================
