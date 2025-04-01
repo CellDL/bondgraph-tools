@@ -122,11 +122,12 @@ WHERE {{
 QUANTITIES_QUERY = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?quantity ?units ?label
+SELECT DISTINCT ?quantity ?units ?variable ?label
 WHERE {{
     ?quantity
         a bg:Quantity ;
         bg:units ?units .
+    OPTIONAL {{ ?quantity bg:variable ?variable }}
     OPTIONAL {{ ?quantity rdfs:label ?label }}
 }}"""
 

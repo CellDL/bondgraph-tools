@@ -130,11 +130,12 @@ class TemplateRegistry:
     #====================================================
         result = rdf_graph.query(QUANTITIES_QUERY)
         if result.vars is not None:
-            (uri_key, units_key, label_key) = result.vars
+            (uri_key, units_key, variable_key, label_key) = result.vars
             for row in result.bindings:
                 uri: URIRef = row[uri_key]                  # type: ignore
                 units: Literal = row.get(units_key)         # type: ignore
                 label: Optional[Literal] = row.get(label_key)   # type: ignore
+                variable: Optional[Literal] = row.get(variable_key)   # type: ignore
                 self.__quantities[uri] = Quantity(uri, units, label, variable)
 
     def __load_templates(self, rdf_graph: rdflib.Graph):
