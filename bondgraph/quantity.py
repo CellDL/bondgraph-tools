@@ -54,27 +54,12 @@ class Units:
         if isinstance(units, str):
             units = unit_registry[units]
         self.__units = pint.Quantity(1, units)
-
-        #self.__name = f'{self.__pint_units.u:~P}'.replace('.', '_').replace('·', '_').replace('/', '_per_')
         name = (str(self.__units.u).replace(' * ', '_')
                                    .replace(' / ', '_per_')
                                    .replace(' ** 2', '_squared'))
         for fullname, replacement in SUBSTITUTIONS.items():
             name = name.replace(fullname, replacement)
         self.__name = name
-        '''
-        >>> str(ur.from_ucum('L.s-1').u)
-        'liter / second'
-        >>> str(ur.from_ucum('kPa.s.L-1').u)
-        'kilopascal * second / liter'
-        >>> str(ur.from_ucum('kPa.s.L-2').u)
-        'kilopascal * second / liter ** 2'
-        >>> x = ur.from_ucum('kPa.s.L-2').u
-        >>> '{x:~P}'
-        '{x:~P}'
-        >>> f'{x:~P}'
-        'kPa·s/l²'
-        '''
 
     @classmethod
     def from_ucum(cls, ucum_units: Literal|str) -> Self:

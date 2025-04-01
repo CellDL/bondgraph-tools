@@ -96,9 +96,7 @@ class ModelLoader:
             if result.vars is not None:
                 (node_key, quantity_key, name_key, value_key) = result.vars
                 for row in result.bindings:
-                    print({str(k): self.__ns_map.simplify(v) for k, v in row.items()})  # <<<<<<<<<<<<<
                     node_uri: URIRef = row[node_key]            # type: ignore
-
                     quantity_uri: URIRef = row[quantity_key]    # type: ignore
                     name: URIRef = row[name_key]                # type: ignore
                     value: Literal = row[value_key]             # type: ignore
