@@ -38,13 +38,13 @@ if TYPE_CHECKING:
 #===============================================================================
 
 class BondgraphNode:
-    def __init__(self, uri: URIRef, type: URIRef, units: Literal,
+    def __init__(self, uri: URIRef, type: URIRef, units: Units,
             label: Optional[Literal]=None, properties: Optional[dict[str, Any]]=None):
         self.__uri = uri
         self.__type = type
+        self.__units = units
         self.__label = label
         self.__properties = properties if properties is not None else {}
-        self.__units = Units.from_ucum(units)
         self.__quantities: dict[URIRef, Quantity] = {}
         self.__quantity_values: dict[URIRef, tuple[URIRef, float]] = {}
         self.__sources: set[BondgraphNode] = set()
@@ -122,6 +122,13 @@ class BondgraphNode:
     def add_target(self, target: Self):
     #==================================
         self.__targets.add(target)
+
+    def copy(self) -> 'BondgraphNode':
+    #=================================
+        node = BondgraphNode(self.__uri, self.__type, self.__units,
+            label=self.__label, properties=self.__properties.copy())
+        node.__quantities = self.__quantities.copy()
+        return node
 
     def get_property(self, key: str, default=None) -> Optional[Any]:
     #===============================================================
@@ -218,7 +225,7 @@ class BondgraphModel:
                  label: Optional[Literal]=None,
                  properties: Optional[dict[str, Any]]=None) -> BondgraphNode:
         self.__check_updatable()
-        node = BondgraphNode(node_uri, type, units, label=label, properties=properties)
+        node = BondgraphNode(node_uri, type, Units.from_ucum(units), label=label, properties=properties)
         self.__nodes[node_uri] = node
         return node
 
@@ -274,17 +281,17 @@ class BondgraphModel:
     #=============================================================================================
         self.__check_updatable()
         if template.model is not None:
-            component_nodes = copy.deepcopy(template.model.nodes)
             uri_remap = {}
-            for node in component_nodes:
+            for node in template.model.nodes:
                 if node.uri in template_ports:
                     node_uri = template_ports[node.uri]
                 else:
                     node_uri = self.__get_uri()
                 uri_remap[node.uri] = node_uri
-                node.set_uri(node_uri)
                 if node_uri not in self.__nodes:
-                    self.__nodes[node_uri] = node
+                    new_node = node.copy()
+                    new_node.set_uri(node_uri)
+                    self.__nodes[node_uri] = new_node
             for bond in template.model.__bonds.values():
                 self.add_bond(self.__get_uri(), uri_remap[bond.nodes[0].uri], uri_remap[bond.nodes[1].uri])
 
