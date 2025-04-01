@@ -98,6 +98,10 @@ class NamespaceMap:
         self.__prefix_dict[prefix] = namespace
         self.__reverse_map[namespace] = prefix
 
+    def copy(self) -> 'NamespaceMap':
+    #================================
+        return NamespaceMap(self.__prefix_dict)
+
     def curie(self, uri) -> str:
     #===========================
         for prefix, namespace in self.__prefix_dict.items():
@@ -127,6 +131,13 @@ class NamespaceMap:
                 return f'"{str(term)}"^^{self.simplify(dt)}'
             return str(term)
         return term
+
+    def sparql_prefixes(self) -> str:
+    #================================
+        return '\n'.join([
+            f'PREFIX {prefix}: <{namespace}>'
+                for prefix, namespace in self.__prefix_dict.items()
+        ])
 
     def uri(self, curie: str) -> URIRef:
     #===================================

@@ -20,11 +20,9 @@
 
 import logging
 from pathlib import Path
-from typing import Optional, Self
+from typing import Optional
 
 #===============================================================================
-
-import networkx as nx
 
 import rdflib
 from rdflib import BNode, Literal, URIRef
@@ -33,139 +31,99 @@ from rdflib import BNode, Literal, URIRef
 
 from .bondgraph import BondgraphModel
 from .definitions import NS_MAP
-from .queries import SPECIFICATION_QUERY
+from .queries import SPECIFICATION_QUERY, SPECIFICATION_NODE_QUANTITIES, SPECIFICATION_NODE_VALUES
 from .template import TemplateRegistry
 
 #===============================================================================
 
+class ModelLoader:
+    def __init__(self, bg_spec: str, registry: TemplateRegistry):
+        self.__rdf_graph = rdflib.Graph(identifier=f'{Path(bg_spec).absolute().as_uri()}')
+        self.__rdf_graph.parse(bg_spec, format='turtle')
+        self.__model = None
+        self.__model
+        self.__ns_map = NS_MAP.copy()
+        self.__ns_map.add_namespace('', f'{self.__rdf_graph.identifier}#')
+        self.__sparql_prefixes = self.__ns_map.sparql_prefixes()
+        self.__load_model(registry)
+        if self.__model is not None:
+            self.__load_values()
+            self.__load_quantities()
+            self.__model.freeze()
+
+    @property
+    def model(self):
+    #===============
+        return self.__model
+
+    def __load_model(self, registry):
+    #================================
+        result = self.__rdf_graph.query(SPECIFICATION_QUERY)
+        if result.vars is not None:
+            (model_key, name_key, component_key, template_key, port_key, node_key) = result.vars
+            last_component = None
+            template = None
+            template_ports = {}
+            for row in result.bindings:
+                uri: URIRef = row[model_key]                    # type: ignore
+                component_id: BNode = row[component_key]        # type: ignore
+                name: Optional[Literal] = row.get(name_key)     # type: ignore
+                template_uri: URIRef = row[template_key]        # type: ignore
+                port_uri: URIRef = row[port_key]                # type: ignore
+                node_uri: URIRef = row[node_key]                # type: ignore
+                if self.__model is None:
+                    self.__model = BondgraphModel(uri, self.__ns_map, name=name)
+                    self.__model_id = self.__ns_map.curie(self.__model.uri)
+                elif self.__model.uri != uri:
+                    logging.error(f'Multiple models in source, used: `{self.__model.uri}`')
+                    break
+                if last_component != component_id:
+                    if template is not None and len(template_ports):
+                        self.__model.merge_template(template, template_ports)
+                    template = registry.get_template(template_uri)
+                    template_ports = {}
+                    last_component = component_id
+                template_ports[port_uri] = node_uri
+            if self.__model is not None and template is not None and len(template_ports):
+                self.__model.merge_template(template, template_ports)
+
+    def __load_quantities(self):
+    #===========================
+        if self.__model is not None:
+            result = self.__rdf_graph.query(SPECIFICATION_NODE_QUANTITIES
+                                                .replace('%MODEL%', self.__model_id)
+                                                .replace('%PREFIXES%', self.__sparql_prefixes))
+            if result.vars is not None:
+                (node_key, quantity_key, name_key, value_key) = result.vars
+                for row in result.bindings:
+                    print({str(k): self.__ns_map.simplify(v) for k, v in row.items()})  # <<<<<<<<<<<<<
+                    node_uri: URIRef = row[node_key]            # type: ignore
+
+                    quantity_uri: URIRef = row[quantity_key]    # type: ignore
+                    name: URIRef = row[name_key]                # type: ignore
+                    value: Literal = row[value_key]             # type: ignore
+                    if (node := self.__model.get_node(node_uri)) is not None:
+                        node.set_quantity_value(quantity_uri, name, value)
+
+    def __load_values(self):
+    #=======================
+        if self.__model is not None:
+            result = self.__rdf_graph.query(SPECIFICATION_NODE_VALUES
+                                                .replace('%MODEL%', self.__model_id)
+                                                .replace('%PREFIXES%', self.__sparql_prefixes))
+            if result.vars is not None:
+                (node_key, value_key) = result.vars
+                for row in result.bindings:
+                    node_uri: URIRef = row[node_key]            # type: ignore
+                    value: Literal = row[value_key]             # type: ignore
+                    if (node := self.__model.get_node(node_uri)) is not None:
+                        node.set_value(value)
 
 #===============================================================================
 
 def load_model(bg_spec: str, registry: TemplateRegistry) -> Optional[BondgraphModel]:
-#=====================================================================================
-    rdf_graph = rdflib.Graph(identifier=f'{Path(bg_spec).as_uri()}')
-    rdf_graph.parse(bg_spec, format='turtle')
-
-# Have component (C) with template and connections, where a connection specifies a template port
-# and a node with which to identify the connection.
-
-    model = None
-    NS_MAP.add_namespace('', f'{rdf_graph.identifier}#')
-    result: rdflib.query.Result = rdf_graph.query(SPECIFICATION_QUERY)
-    if result.vars is not None:
-        (model_key, component_key, template_key, port_key, port_key) = result.vars
-        last_component = None
-        template = None
-        segment_ports = {}
-        for row in result.bindings:
-            uri: URIRef = row[model_key]                    # type: ignore
-            component_id: BNode = row[component_key]        # type: ignore
-            template_uri: URIRef = row[template_key]        # type: ignore
-            port_uri: URIRef = row[port_key]                # type: ignore
-            node_uri: URIRef = row[port_key]                # type: ignore
-            if model is None:
-                model = BondgraphModel(uri)
-            elif model.uri != uri:
-                logging.error(f'Multiple models in source, used: `{model.uri}`')
-                break
-            if last_component != component_id:
-                if template is not None and len(segment_ports):
-                    model.merge_template(template, segment_ports)
-                template = registry.get_template(template_uri)
-                segment_ports = {}
-                last_component = component_id
-            segment_ports[port_uri] = node_uri
-        if model is not None and template is not None and len(segment_ports):
-            model.merge_template(template, segment_ports)
-    return model
+#====================================================================================
+    model_loader = ModelLoader(bg_spec, registry)
+    return model_loader.model
 
 #===============================================================================
-
-"""
-:stomach-spleen
-    a bg:Model ;
-    bg:component [
-        tpl:template lib:segment-template ;
-        tpl:connection [
-            tpl:port lib:blood-pressure_1 ;
-            bg:node :u_Aorta
-        ], [
-            tpl:port lib:blood-pressure_2 ;
-            bg:node :u_CeliacA
-        ] ;
-        bg:parameter [
-            bg:name lib:resistance ;
-            bg:value "100 kPa.s/L"^^cdt:ucum
-        ]
-    ], [
-
-
-?model ?component ?template ?port ?node
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b1', 'lib:segment-template', 'lib:blood-pressure_1', ':u_Aorta')
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b1', 'lib:segment-template', 'lib:blood-pressure_2', ':u_CeliacA')
-
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b5', 'lib:segment-template', 'lib:blood-pressure_1', ':u_CeliacA')
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b5', 'lib:segment-template', 'lib:blood-pressure_2', ':u_GastricC')
-
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b9', 'lib:segment-template', 'lib:blood-pressure_1', ':u_CeliacA')
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b9', 'lib:segment-template', 'lib:blood-pressure_2', ':u_SplenicC')
-
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b13', 'lib:segment-template', 'lib:blood-pressure_1', ':u_GastricC')
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b13', 'lib:segment-template', 'lib:blood-pressure_2', ':u_PortalV')
-
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b17', 'lib:segment-template', 'lib:blood-pressure_1', ':u_SplenicC')
-(':stomach-spleen', 'nb87eb1c10977496a99ee381a8d6dc184b17', 'lib:segment-template', 'lib:blood-pressure_2', ':u_PortalV')
-
-
-Have component (C) with template and connections, where a connection specifies a template port
-and a node with which to identify the connection.
-
-                                C              C
-                               --- u_GastricC ---
-                 C           /                    \
-     -- u_Aorta --- u_CeliacA                      u_PortalV --
-                             \\                    /
-                               --- u_SplenicC ---
-                                C              C
-
-
-C ==>  --> U --> V --> U -->
-
-
-                             --> G --> V --> P -->
-                 --> C --> V --> G -->
-     --> A --> V --> C -->
-                 --> C --> V --> S -->
-                             --> S --> V --> P -->
-
-
-
-                         - V --> G -->
-                        /              V
-     --> A --> V --> C                   --> P -->
-                      \\               V
-                        -- V --> S -->
-
-
-
-
-
-v_in ---> U_node1 --> V_segment --> U_node2 ---> v_out
-
-tpl_model = BondgraphModel(template.uri)
-v_in = tpl_model.add_node('v_in', 'source')
-u_node1 = BondgraphNode('u_node1', 'zero-storage')
-v_segment = BondgraphNode('v_segment', 'one-resistance')
-u_node2 = BondgraphNode('u_node2', 'zero-storage')
-v_out = BondgraphNode('v_out', 'sink')
-
-BondgraphNode(v_in, u_node1)
-BondgraphNode(u_node1, v_segment)
-BondgraphNode(v_segment, u_node2)
-BondgraphNode(u_node2, v_out)
-
-"""
-
-#===============================================================================
-
-

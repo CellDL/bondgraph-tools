@@ -100,7 +100,7 @@ class TemplateRegistry:
                 if type is not None:
                     properties['type'] = NS_MAP.curie(type)
                 if model is None or model_uri != model.uri:
-                    model = BondgraphModel(model_uri)
+                    model = BondgraphModel(model_uri, NS_MAP)
                     self.__models[model_uri] = model
                     model_uri = model.uri
                 model.add_node(node_uri, type, units, label=label, properties=properties)

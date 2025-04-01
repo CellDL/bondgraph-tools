@@ -19,9 +19,11 @@
 #===============================================================================
 
 SPEC_PREFIXES = """
+PREFIX : <#>
 PREFIX bg: <http://celldl.org/ontologies/bond-graph#>
 PREFIX cdt: <https://w3id.org/cdt/>
 PREFIX lib: <http://celldl.org/templates/vascular#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX tpl: <http://celldl.org/ontologies/model-template#>
 """
 
@@ -30,22 +32,41 @@ PREFIX tpl: <http://celldl.org/ontologies/model-template#>
 SPECIFICATION_QUERY = f"""
 {SPEC_PREFIXES}
 
-SELECT DISTINCT ?model ?component ?template ?port ?node
+SELECT DISTINCT ?model ?name ?component ?template ?port ?node
 WHERE {{
     ?model
         a bg:Model ;
         bg:component ?component .
     ?component
         tpl:template ?template ;
-        tpl:connection ?connection .
-    ?connection
-        tpl:port ?port ;
-        bg:node ?node .
+        tpl:interface [
+            tpl:node ?port ;
+            bg:node ?node
+        ].
+    OPTIONAL {{ ?model rdfs:label ?name }}
 }}
-GROUP BY ?model ?component ?connection
 ORDER BY ?model ?component"""
 
 #===============================================================================
+
+SPECIFICATION_NODE_QUANTITIES = f"""
+%PREFIXES%
+
+SELECT DISTINCT ?node ?quantity ?name ?value
+WHERE {{
+    %MODEL% bg:component [
+        tpl:interface [
+            bg:node ?node
+        ]
+    ] .
+    ?node bg:quantities [
+        bg:quantity ?quantity ;
+        bg:name ?name ;
+        bg:value ?value
+    ] .
+}}
+ORDER BY ?node"""
+
 #===============================================================================
 
 BONDGRAPH_NODE_TYPES = [
@@ -56,7 +77,21 @@ BONDGRAPH_NODE_TYPES = [
     'bg:ZeroNode'
     'bg:ZeroStorageNode'
 ]
+SPECIFICATION_NODE_VALUES = f"""
+%PREFIXES%
 
+SELECT DISTINCT ?node ?value
+WHERE {{
+    %MODEL% bg:component [
+        tpl:interface [
+            bg:node ?node
+        ]
+    ] .
+    ?node bg:value ?value .
+}}
+ORDER BY ?node"""
+
+#===============================================================================
 #===============================================================================
 
 TEMPLATE_PREFIXES = """

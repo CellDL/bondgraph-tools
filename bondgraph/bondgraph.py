@@ -18,7 +18,8 @@
 #
 #===============================================================================
 
-from typing import Optional, TYPE_CHECKING
+import copy
+from typing import Any, Optional, Self, TYPE_CHECKING
 
 #===============================================================================
 
@@ -26,6 +27,7 @@ from rdflib import Literal, URIRef
 
 #===============================================================================
 
+from .namespaces import NamespaceMap
 from .quantity import Quantity, Units, Value
 
 if TYPE_CHECKING:
@@ -112,6 +114,9 @@ class BondgraphNode:
                 raise TypeError(f"Value's units don't match Quantity's: {new_value.units} != {quantity.units}")
             self.__quantity_values[quantity_uri] = (name, new_value.value)
 
+    def set_uri(self, uri: URIRef):
+    #==============================
+        self.__uri = uri
 
     def set_value(self, value: Literal):   # "100 kPa.s/L"^^cdt:ucum
     #===================================
@@ -143,11 +148,16 @@ class BondgraphBond:
 #===============================================================================
 
 class BondgraphModel:
-    def __init__(self, uri: URIRef):
+    def __init__(self, uri: URIRef, ns_map: NamespaceMap, name: Optional[Literal]=None):
         self.__uri = uri
+        self.__name = str(name) if name is not None else uri.rsplit('#')[-1]
+        self.__ns_map = ns_map
         self.__nodes: dict[URIRef, BondgraphNode] = {}
         self.__bonds: dict[URIRef, BondgraphBond] = {}
+        self.__last_id = 0
         self.__updatable  = True
+        self.__nx_graph = None
+
     @property
     def frozen(self):
     #================
@@ -210,21 +220,29 @@ class BondgraphModel:
     #============================================
         return node_uri in self.__nodes
 
-
-    def __add_template(self, template, node_uri, port_uri):
-        pass
+    def __get_uri(self) -> URIRef:
+    #=============================
+        self.__last_id += 1
+        return self.__ns_map.uri(f':ID-{self.__last_id:08d}')
 
     def merge_template(self, template: 'BondgraphTemplate', template_ports: dict[URIRef, URIRef]):
     #=============================================================================================
         self.__check_updatable()
         if template.model is not None:
-            for port_uri, node_uri in template_ports.items():
-                if (port := template.model.get_node(port_uri)) is not None:
-                    if (node := self.get_node(node_uri)) is not None:
-                        pass
-                        # check node and port are compatible (same bondgraphClass)
-                    else:
-                        self.__add_template(template, node_uri, port)
+            component_nodes = copy.deepcopy(template.model.nodes)
+            uri_remap = {}
+            for node in component_nodes:
+                if node.uri in template_ports:
+                    node_uri = template_ports[node.uri]
+                else:
+                    node_uri = self.__get_uri()
+                uri_remap[node.uri] = node_uri
+                node.set_uri(node_uri)
+                if node_uri not in self.__nodes:
+                    self.__nodes[node_uri] = node
+            for bond in template.model.__bonds.values():
+                self.add_bond(self.__get_uri(), uri_remap[bond.nodes[0].uri], uri_remap[bond.nodes[1].uri])
+
     def nx_graph(self) -> nx.DiGraph:
     #================================
         self.freeze()
