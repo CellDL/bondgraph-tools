@@ -29,6 +29,7 @@ from rdflib import Literal, URIRef
 
 from .namespaces import NamespaceMap
 from .quantity import Quantity, Units, Value
+from .definitions import BONDGRAPH_BASE_TYPES
 
 if TYPE_CHECKING:
     from .template import BondgraphTemplate
@@ -50,8 +51,26 @@ class BondgraphNode:
         self.__value: Optional[Value] = None
 
     @property
+    def delta(self) -> str:
+    #======================
+        inputs = '+'.join([n.name for n in self.__sources])
+        outputs = '-'.join([n.name for n in self.__targets])
+        if inputs != '' and outputs != '':
+            return f'{inputs}-{outputs}'
+        elif inputs != '':
+            return inputs
+        elif outputs != '':
+            return f'-{outputs}'
+        else:
+            return ''
+
+    @property
     def label(self) -> Optional[str]:
         return str(self.__label) if self.__label else None
+
+    @property
+    def name(self) -> str:
+        return self.__uri.rsplit('#')[-1]
 
     @property
     def properties(self):
@@ -72,7 +91,12 @@ class BondgraphNode:
 
     @property
     def type(self):
-        return self.__type
+        # If a ZeroStorage or OneResistance node hasn't been assigned values for
+        # its parameters then it's treated as a Zero or One node.
+        if len(self.__quantity_values) == 0:
+            return BONDGRAPH_BASE_TYPES.get(self.__type, self.__type)
+        else:
+            return self.__type
 
     @property
     def units(self) -> Units:
@@ -159,10 +183,29 @@ class BondgraphModel:
         self.__nx_graph = None
 
     @property
+    def bonds(self) -> list[BondgraphBond]:
+    #======================================
+        return list(self.__bonds.values())
+
+    @property
+    def disconnected(self):
+    #======================
+        return self.__nx_graph is None or not nx.is_weakly_connected(self.__nx_graph)
+
+    @property
     def frozen(self):
     #================
         return not self.__updatable
 
+    @property
+    def name(self):
+    #==============
+        return self.__name
+
+    @property
+    def nodes(self) -> list[BondgraphNode]:
+    #======================================
+        return list(self.__nodes.values())
 
     @property
     def uri(self):

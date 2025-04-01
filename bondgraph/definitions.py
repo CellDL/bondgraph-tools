@@ -29,3 +29,22 @@ NS_MAP = (NamespaceMap.fromSparqlPrefixes(TEMPLATE_PREFIXES)
                       .merge_namespaces(NamespaceMap.fromSparqlPrefixes(SPEC_PREFIXES)))
 
 #===============================================================================
+
+BONDGRAPH_BASE_TYPES: dict[URIRef, URIRef] = {
+    NS_MAP.uri('bg:OneResistanceNode'): NS_MAP.uri('bg:OneNode'),
+    NS_MAP.uri('bg:ZeroStorageNode'): NS_MAP.uri('bg:ZeroNode'),
+}
+
+#===============================================================================
+
+BONDGRAPH_EQUATIONS: dict[URIRef, list[str]] = {
+    NS_MAP.uri('bg:ZeroStorageNode'): [
+        'Eq(Derivative({CHARGE}, {TIME}), {NODE_DELTA})',
+        'Eq({NODE}, {ELASTANCE}*({CHARGE} - {RESIDUAL_CHARGE}))',
+    ],
+    NS_MAP.uri('bg:OneResistanceNode'): [
+        'Eq({NODE}, ({NODE_DELTA})/{RESISTANCE})',
+    ],
+}
+
+#===============================================================================
