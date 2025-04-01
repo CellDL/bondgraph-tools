@@ -181,9 +181,25 @@ class BondgraphModel:
         if not self.__updatable:
             raise ValueError(f"Bondgraph {self.__uri} is readonly and can't be modified")
 
+    def __create_nx_graph(self):
+    #===========================
+        if self.__nx_graph is None:
+            self.__nx_graph = nx.DiGraph()
+            for node in self.__nodes.values():
+                node_id = self.__ns_map.curie(node.uri)
+                attributes = node.properties.copy()
+                attributes['label'] = node_id[1:]
+                if node.type is not None:
+                    attributes['type'] = self.__ns_map.curie(node.type)
+                self.__nx_graph.add_node(node_id, **attributes)
+            # Can use a nodes sources/targets...
+            for bond in self.__bonds.values():
+                self.__nx_graph.add_edge(*[self.__ns_map.curie(node.uri) for node in bond.nodes])
+
     def freeze(self):
     #================
         if self.__updatable:
+            self.__create_nx_graph()
             self.__updatable = False
 
     def get_node(self, node_uri: URIRef) -> Optional[BondgraphNode]:
@@ -209,6 +225,10 @@ class BondgraphModel:
                         # check node and port are compatible (same bondgraphClass)
                     else:
                         self.__add_template(template, node_uri, port)
+    def nx_graph(self) -> nx.DiGraph:
+    #================================
+        self.freeze()
+        return self.__nx_graph      # type: ignore [return-value]
 
 #===============================================================================
 
