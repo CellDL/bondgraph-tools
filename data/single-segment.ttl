@@ -12,23 +12,23 @@
         tpl:template lib:segment-template ;
         tpl:interface [
             tpl:node lib:segment-model:pressure_1 ;
-            bg:node :u_input
+            bg:node :input
         ], [
             tpl:node lib:segment-model:flow ;
-            bg:node :v_flow
+            bg:node :flow
         ], [
             tpl:node lib:segment-model:pressure_2 ;
-            bg:node :u_output
+            bg:node :output
         ]
     ] .
 
-:u_input
+:input
     bg:value "16 kPa"^^cdt:ucum .
 
-:u_output
+:output
     bg:value "5 kPa"^^cdt:ucum .
 
-:v_flow
+:flow
     bg:quantities [
         bg:quantity lib:resistance ;
         bg:name :R_flow ;
