@@ -84,29 +84,15 @@ WHERE {{
 
 #===============================================================================
 
-BONDGRAPH_MODEL_PARAMETERS = f"""
+BONDGRAPH_MODEL_QUANTITIES = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?model ?node ?parameter
+SELECT DISTINCT ?model ?node ?quantity
 WHERE {{
     ?model a bg:Model .
     ?node
         a ?type ;
-        tpl:parameter ?parameter  .
-    FILTER (?type IN ({', '.join(BONDGRAPH_NODE_TYPES)}))
-}}"""
-
-#===============================================================================
-
-BONDGRAPH_MODEL_STATES = f"""
-{TEMPLATE_PREFIXES}
-
-SELECT DISTINCT ?model ?node ?state
-WHERE {{
-    ?model a bg:Model .
-    ?node
-        a ?type ;
-        tpl:state ?state  .
+        bg:quantities ?quantity  .
     FILTER (?type IN ({', '.join(BONDGRAPH_NODE_TYPES)}))
 }}"""
 

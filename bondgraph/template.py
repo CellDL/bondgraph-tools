@@ -116,28 +116,17 @@ class TemplateRegistry:
                     if ((source := model.get_node(source_uri)) is not None
                     and (target := model.get_node(target_uri)) is not None):
                         model.add_bond(bond_uri, source, target)
-        result = rdf_graph.query(BONDGRAPH_MODEL_STATES)
+        result = rdf_graph.query(BONDGRAPH_MODEL_QUANTITIES)
         if result.vars is not None:
-            (model_key, node_key, state_key) = result.vars
+            (model_key, node_key, quantity_key) = result.vars
             for row in result.bindings:
                 model_uri: URIRef = row[model_key]          # type: ignore
                 node_uri: URIRef = row[node_key]            # type: ignore
-                state: URIRef = row.get(state_key)          # type: ignore
+                quantity: URIRef = row.get(quantity_key)    # type: ignore
                 if (model := self.__models.get(model_uri)) is not None:
                     if ((node := model.get_node(node_uri)) is not None
-                     and state in self.__quantities):
-                        node.add_state(self.__quantities[state])
-        result = rdf_graph.query(BONDGRAPH_MODEL_PARAMETERS)
-        if result.vars is not None:
-            (model_key, node_key, parameter_key) = result.vars
-            for row in result.bindings:
-                model_uri: URIRef = row[model_key]          # type: ignore
-                node_uri: URIRef = row[node_key]            # type: ignore
-                parameter: URIRef = row.get(parameter_key)  # type: ignore
-                if (model := self.__models.get(model_uri)) is not None:
-                    if ((node := model.get_node(node_uri)) is not None
-                     and parameter in self.__quantities):
-                        node.add_parameter(self.__quantities[parameter])
+                     and quantity in self.__quantities):
+                        node.add_quantity(self.__quantities[quantity])
 
     def __load_quantities(self, rdf_graph: rdflib.Graph):
     #====================================================
