@@ -77,14 +77,6 @@ class Units:
     #=================
         return str(self.__units.u)
 
-    def base_items(self):
-    #====================
-        return PREFERRED_BASE_ITEMS.get(str(self),
-                                        self.__units.unit_items())
-        ## if not PREFERRED_BASE_ITEMS start by going through
-        ## self.__pint_units.unit_items() and only go to_base_units() if not a known
-        ## CELLML_UNIT...
-
     @property
     def name(self):
         return self.__name
@@ -93,6 +85,10 @@ class Units:
     def units(self):
         return self.__units
 
+    def base_items(self):
+    #====================
+        return PREFERRED_BASE_ITEMS.get(str(self),
+                                        self.__units.unit_items())
 #===============================================================================
 
 class Value:
