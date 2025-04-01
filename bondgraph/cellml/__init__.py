@@ -106,7 +106,7 @@ class CellMLModel:
             mathml = ['<math xmlns="http://www.w3.org/1998/Math/MathML">']
             mathml.extend([mathml_printer.doprint(sympy.sympify(equation)) for equation in equations])
             mathml.append('</math>')
-            self.__main.append(etree.fromstring('\n'.join(mathml)))
+            self.__main.append(etree.fromstring(''.join(mathml)))
 
     def add_node(self, node: 'BondgraphNode'):
     #=========================================
@@ -129,7 +129,7 @@ class CellMLModel:
     #===================================
         elements = self.__elements_from_units(units)
         if len(elements):
-            units_element = etree.fromstring('\n'.join(elements))
+            units_element = etree.fromstring(''.join(elements))
             self.__main.addprevious(units_element)
 
     def __add_variable(self, name: str, units: Units, init: Optional[float]=None):
@@ -151,8 +151,8 @@ class CellMLModel:
                 item_elements = self.__elements_from_units(Units(item[0]))
                 elements.extend(item_elements)
             name = Units.normalise_name(item[0])
-            if item[1] == 0: elements.append(f'  <unit units="{name}"/>')
-            else: elements.append(f'  <unit units="{name}" exponent="{item[1]}"/>')
+            if item[1] == 0: elements.append(f'<unit units="{name}"/>')
+            else: elements.append(f'<unit units="{name}" exponent="{item[1]}"/>')
         elements.append('</units>')
         self.__known_units.append(str(units))
         return elements
