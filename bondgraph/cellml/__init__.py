@@ -149,7 +149,7 @@ class CellMLModel:
             if item[0] not in self.__known_units:
                 item_elements = self.__elements_from_units(Units(item[0]))
                 elements.extend(item_elements)
-            if item[1] == 1: elements.append(f'  <unit units="{item[0]}"/>')
+            if item[1] == 0: elements.append(f'  <unit units="{item[0]}"/>')
             else: elements.append(f'  <unit units="{item[0]}" exponent="{item[1]}"/>')
         elements.append('</units>')
         self.__known_units.append(str(units))
