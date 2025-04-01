@@ -147,6 +147,12 @@ class BondgraphModel:
         self.__uri = uri
         self.__nodes: dict[URIRef, BondgraphNode] = {}
         self.__bonds: dict[URIRef, BondgraphBond] = {}
+        self.__updatable  = True
+    @property
+    def frozen(self):
+    #================
+        return not self.__updatable
+
 
     @property
     def uri(self):
@@ -156,17 +162,29 @@ class BondgraphModel:
     #=================================================================
                  label: Optional[Literal]=None,
                  properties: Optional[dict[str, Any]]=None) -> BondgraphNode:
+        self.__check_updatable()
         node = BondgraphNode(node_uri, type, units, label=label, properties=properties)
         self.__nodes[node_uri] = node
         return node
 
     def add_bond(self, uri: URIRef, node_0: URIRef, node_1: URIRef) -> Optional[BondgraphBond]:
     #==========================================================================================
+        self.__check_updatable()
         if ((n0 := self.get_node(node_0)) is not None
         and (n1 := self.get_node(node_1)) is not None):
             bond = BondgraphBond(uri, n0, n1)
             self.__bonds[uri] = bond
             return bond
+
+    def __check_updatable(self):
+    #===========================
+        if not self.__updatable:
+            raise ValueError(f"Bondgraph {self.__uri} is readonly and can't be modified")
+
+    def freeze(self):
+    #================
+        if self.__updatable:
+            self.__updatable = False
 
     def get_node(self, node_uri: URIRef) -> Optional[BondgraphNode]:
     #===============================================================
@@ -182,6 +200,7 @@ class BondgraphModel:
 
     def merge_template(self, template: 'BondgraphTemplate', template_ports: dict[URIRef, URIRef]):
     #=============================================================================================
+        self.__check_updatable()
         if template.model is not None:
             for port_uri, node_uri in template_ports.items():
                 if (port := template.model.get_node(port_uri)) is not None:
