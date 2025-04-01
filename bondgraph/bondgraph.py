@@ -54,10 +54,10 @@ class BondgraphNode:
     @property
     def delta(self) -> str:
     #======================
-        inputs = '+'.join(list({n.name for n in self.__sources}))
-        outputs = '-'.join(list({n.name for n in self.__targets}))
+        inputs = ' + '.join(list({n.name for n in self.__sources}))
+        outputs = ' - '.join(list({n.name for n in self.__targets}))
         if inputs != '' and outputs != '':
-            return f'{inputs}-{outputs}'
+            return f'{inputs} - {outputs}'
         elif inputs != '':
             return inputs
         elif outputs != '':
