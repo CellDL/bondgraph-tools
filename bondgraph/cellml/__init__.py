@@ -99,12 +99,29 @@ class CellMLModel:
     #==============
         return self.__name
 
-    def __add_equations(self, equations: list[str]):
-    #===============================================
+    def __add_equations(self, node: 'BondgraphNode'):
+    #================================================
+        equations = BONDGRAPH_EQUATIONS.get(node.type, [])
         if len(equations):
+            local_names = locals()
+            n = 0
+            node_delta = []
+            for name in node.delta.split():
+                if name not in ['+', '-']:
+                    local_names[f'N_{n}'] = sympy.Symbol(name)
+                    node_delta.append(f'N_{n}')
+                    n += 1
+                else:
+                    node_delta.append(name)
+            node_delta = ' '.join(node_delta)
+            for quantity, name, value in node.quantity_values:
+                local_names[quantity.variable] = sympy.Symbol(name)
+            TIME = sympy.Symbol(self.__time_var)
+            NODE = sympy.Symbol(node.name)
             mathml_printer = MathMLContentPrinter({'disable_split_super_sub': True})
             mathml = ['<math xmlns="http://www.w3.org/1998/Math/MathML">']
-            mathml.extend([mathml_printer.doprint(sympy.sympify(equation)) for equation in equations])
+            mathml.extend([mathml_printer.doprint(eval(equation.format(NODE_DELTA=node_delta)))
+                                                        for equation in equations])
             mathml.append('</math>')
             self.__main.append(etree.fromstring(''.join(mathml)))
 
@@ -114,16 +131,7 @@ class CellMLModel:
         for quantity, name, value in node.quantity_values:
             self.__add_variable(name, quantity.units, value)
         # Assign equation variables now that quantities have names
-        equation_vars = {
-            'TIME': self.__time_var,
-            'NODE': node.name,
-            'NODE_DELTA': node.delta,
-        }
-        for quantity, name, value in node.quantity_values:
-            equation_vars[quantity.variable] = name
-        equations = BONDGRAPH_EQUATIONS.get(node.type, [])
-        self.__add_equations([equation.format(**equation_vars)
-                                for equation in equations])
+        self.__add_equations(node)
 
     def __add_units(self, units: Units):
     #===================================

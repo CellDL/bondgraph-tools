@@ -39,11 +39,11 @@ BONDGRAPH_BASE_TYPES: dict[URIRef, URIRef] = {
 
 BONDGRAPH_EQUATIONS: dict[URIRef, list[str]] = {
     NS_MAP.uri('bg:ZeroStorageNode'): [
-        'Eq(Derivative({CHARGE}, {TIME}), {NODE_DELTA})',
-        'Eq({NODE}, {ELASTANCE}*({CHARGE} - {RESIDUAL_CHARGE}))',
+        'sympy.Eq(sympy.Derivative(CHARGE, TIME), {NODE_DELTA})',
+        'sympy.Eq(NODE, ELASTANCE*(CHARGE - RESIDUAL_CHARGE))',
     ],
     NS_MAP.uri('bg:OneResistanceNode'): [
-        'Eq({NODE}, ({NODE_DELTA})/{RESISTANCE})',
+        'sympy.Eq(NODE, ({NODE_DELTA})/RESISTANCE)',
     ],
 }
 

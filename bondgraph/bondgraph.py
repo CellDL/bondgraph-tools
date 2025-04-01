@@ -61,7 +61,7 @@ class BondgraphNode:
         elif inputs != '':
             return inputs
         elif outputs != '':
-            return f'-{outputs}'
+            return f'- {outputs}'
         else:
             return ''
 
