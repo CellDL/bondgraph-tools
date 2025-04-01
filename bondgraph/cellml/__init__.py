@@ -101,11 +101,12 @@ class CellMLModel:
 
     def __add_equations(self, equations: list[str]):
     #===============================================
-        mathml_printer = MathMLContentPrinter({'disable_split_super_sub': True})
-        mathml = ['<math xmlns="http://www.w3.org/1998/Math/MathML">']
-        mathml.extend([mathml_printer.doprint(sympy.sympify(equation)) for equation in equations])
-        mathml.append('</math>')
-        self.__main.append(etree.fromstring('\n'.join(mathml)))
+        if len(equations):
+            mathml_printer = MathMLContentPrinter({'disable_split_super_sub': True})
+            mathml = ['<math xmlns="http://www.w3.org/1998/Math/MathML">']
+            mathml.extend([mathml_printer.doprint(sympy.sympify(equation)) for equation in equations])
+            mathml.append('</math>')
+            self.__main.append(etree.fromstring('\n'.join(mathml)))
 
     def add_node(self, node: 'BondgraphNode'):
     #=========================================
