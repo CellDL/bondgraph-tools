@@ -1,0 +1,90 @@
+@prefix : <http://celldl.org/templates/vascular#> .
+@prefix bg: <http://celldl.org/ontologies/bond-graph#> .
+@prefix cdt: <https://w3id.org/cdt/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tpl: <http://celldl.org/ontologies/model-template#> .
+
+#===============================================================================
+
+## This is about defining BG model templates
+
+:segment-template
+    a tpl:Template ;
+    rdfs:label "Vascular segment template" ;
+    bg:model :segment-model ;
+    tpl:port    ## Some of the model's nodes are ports...
+        :segment-model:pressure_1 ,
+        :segment-model:pressure_2 .
+
+:segment-model
+    a bg:Model .
+    # Need reference to CellML description
+    # and mapping between CellML variables and BG nodes...
+
+:segment-model:pressure_1
+    a bg:ZeroStorageNode ;
+    bg:model :segment-model ;
+    rdfs:label "Input pressure" ;
+    bg:nodeSettings [ bg:location "node1"^^bg:latex; bg:species "b"^^bg:latex ];
+    bg:units "kPa"^^cdt:ucumunit ;
+    bg:quantities :elastance, :fixed-volume, :volume .
+
+:segment-model:flow
+    a bg:OneResistanceNode ;
+    bg:model :segment-model ;
+    rdfs:label "Flow" ;
+    bg:units "L/s"^^cdt:ucumunit ;
+    bg:quantities :resistance .
+
+:segment-model:pressure_2
+    a bg:ZeroStorageNode ;
+    bg:model :segment-model ;
+    rdfs:label "output pressure" ;
+    bg:nodeSettings [ bg:location "node2"^^bg:latex ];
+    bg:units "kPa"^^cdt:ucumunit ;
+    bg:quantities :elastance, :fixed-volume, :volume .
+
+:segment-model:ID-00000001
+    a bg:Bond ;
+    bg:model :segment-model ;
+    bg:source :segment-model:pressure_1 ;
+    bg:target :segment-model:flow .
+
+:segment-model:ID-00000002
+    a bg:Bond ;
+    bg:model :segment-model ;
+    bg:source :segment-model:flow ;
+    bg:target :segment-model:pressure_2 .
+
+#===============================================================================
+
+# Quantities associated with the segment,
+#
+# These are generic and would likely be defined outside of the template
+# definition.
+
+:elastance
+    a bg:Quantity ;
+    bg:variable "ELASTANCE" ;
+    rdfs:label "Elastance" ;
+    bg:units "kPa/L"^^cdt:ucumunit .
+
+:fixed-volume
+    a bg:Quantity ;
+    bg:variable "RESIDUAL_CHARGE" ;
+    rdfs:label "Fixed volume" ;
+    bg:units "L"^^cdt:ucumunit .
+
+:volume
+    a bg:Quantity ;
+    bg:variable "CHARGE" ;
+    rdfs:label "Volume" ;
+    bg:units "L"^^cdt:ucumunit .
+
+:resistance
+    a bg:Quantity ;
+    bg:variable "RESISTANCE" ;
+    rdfs:label "Segment resistance" ;
+    bg:units "kPa.s/L"^^cdt:ucumunit .
+
+#===============================================================================

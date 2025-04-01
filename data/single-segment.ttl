@@ -1,0 +1,36 @@
+@prefix : <#> .
+@prefix bg: <http://celldl.org/ontologies/bond-graph#> .
+@prefix cdt: <https://w3id.org/cdt/> .
+@prefix lib: <http://celldl.org/templates/vascular#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tpl: <http://celldl.org/ontologies/model-template#> .
+
+:single-segment
+    a bg:Model ;
+    rdfs:label 'Single segment' ;
+    bg:component [
+        tpl:template lib:segment-template ;
+        tpl:interface [
+            tpl:node lib:segment-model:pressure_1 ;
+            bg:node :u_input
+        ], [
+            tpl:node lib:segment-model:flow ;
+            bg:node :v_flow
+        ], [
+            tpl:node lib:segment-model:pressure_2 ;
+            bg:node :u_output
+        ]
+    ] .
+
+:u_input
+    bg:value "16 kPa"^^cdt:ucum .
+
+:u_output
+    bg:value "5 kPa"^^cdt:ucum .
+
+:v_flow
+    bg:quantities [
+        bg:quantity lib:resistance ;
+        bg:name :R_flow ;
+        bg:value "100 kPa.s/L"^^cdt:ucum
+    ] .
