@@ -115,7 +115,7 @@ WHERE {{
 BONDGRAPH_MODEL_QUERY = f"""
 {TEMPLATE_PREFIXES}
 
-SELECT DISTINCT ?model ?node ?type ?label ?units
+SELECT DISTINCT ?model ?node ?type ?units ?label ?location ?species
 WHERE {{
     ?model a bg:Model .
     ?node
@@ -123,6 +123,10 @@ WHERE {{
         bg:model ?model .
     OPTIONAL {{ ?node rdfs:label ?label }}
     OPTIONAL {{ ?node bg:units ?units }}
+    OPTIONAL {{ ?node bg:nodeSettings ?ns
+        OPTIONAL {{ ?ns bg:location ?location }}
+        OPTIONAL {{ ?ns bg:species ?species }}
+    }}
     FILTER (?type IN ({', '.join(BONDGRAPH_NODE_TYPES)}))
 }} ORDER BY ?model"""
 

@@ -88,7 +88,7 @@ class TemplateRegistry:
     #================================================
         result = rdf_graph.query(BONDGRAPH_MODEL_QUERY)
         if result.vars is not None:
-            (model_key, node_key, type_key, label_key, units_key) = result.vars
+            (model_key, node_key, type_key, units_key, label_key) = result.vars[0:5]
             model = None
             for row in result.bindings:
                 model_uri: URIRef = row[model_key]          # type: ignore
@@ -96,11 +96,14 @@ class TemplateRegistry:
                 type: URIRef = row[type_key]                # type: ignore
                 label: Optional[Literal] = row.get(label_key)   # type: ignore
                 units: Optional[Literal] = row.get(units_key)   # type: ignore
+                properties = {str(k): NS_MAP.simplify(row[k]) for k in result.vars[5:] if k in row}
+                if type is not None:
+                    properties['type'] = NS_MAP.curie(type)
                 if model is None or model_uri != model.uri:
                     model = BondgraphModel(model_uri)
                     self.__models[model_uri] = model
                     model_uri = model.uri
-                model.add_node(node_uri, type, label=label, units=units)
+                model.add_node(node_uri, type, units, label=label, properties=properties)
         result = rdf_graph.query(BONDGRAPH_MODEL_BONDS)
         if result.vars is not None:
             (model_key, bond_key, source_key, target_key) = result.vars

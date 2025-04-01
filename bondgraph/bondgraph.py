@@ -34,10 +34,12 @@ if TYPE_CHECKING:
 #===============================================================================
 
 class BondgraphNode:
-    def __init__(self, uri: URIRef, type: URIRef, label: Optional[Literal]=None, units: Optional[Literal]=None):
+    def __init__(self, uri: URIRef, type: URIRef, units: Literal,
+            label: Optional[Literal]=None, properties: Optional[dict[str, Any]]=None):
         self.__uri = uri
         self.__type = type
         self.__label = label
+        self.__properties = properties if properties is not None else {}
         self.__units = Units.from_ucum(units)
         self.__quantities: dict[URIRef, Quantity] = {}
         self.__quantity_values: dict[URIRef, tuple[URIRef, float]] = {}
@@ -48,6 +50,10 @@ class BondgraphNode:
     @property
     def label(self) -> Optional[str]:
         return str(self.__label) if self.__label else None
+
+    @property
+    def properties(self):
+        return self.__properties
 
     @property
     def quantity_values(self) -> list[tuple[Quantity, str, float]]:
@@ -74,6 +80,7 @@ class BondgraphNode:
     def uri(self):
         return self.__uri
 
+    @property
     def value(self):
         return self.__value.value if self.__value is not None else None
 
@@ -88,6 +95,14 @@ class BondgraphNode:
     def add_target(self, target: Self):
     #==================================
         self.__targets.add(target)
+
+    def get_property(self, key: str, default=None) -> Optional[Any]:
+    #===============================================================
+        return self.__properties.get(key, default)
+
+    def has_property(self, key: str) -> bool:
+    #========================================
+        return key in self.__properties
 
     def set_quantity_value(self, quantity_uri: URIRef, name: URIRef, value: Literal):   # "100 kPa.s/L"^^cdt:ucum
     #================================================================================
@@ -137,9 +152,11 @@ class BondgraphModel:
     def uri(self):
         return self.__uri
 
-    def add_node(self, node_uri: URIRef, type: URIRef, label: Optional[Literal]=None, units: Optional[Literal]=None) -> BondgraphNode:
-    #=================================================================================================================================
-        node = BondgraphNode(node_uri, type, label=label, units=units)
+    def add_node(self, node_uri: URIRef, type: URIRef, units: Literal,
+    #=================================================================
+                 label: Optional[Literal]=None,
+                 properties: Optional[dict[str, Any]]=None) -> BondgraphNode:
+        node = BondgraphNode(node_uri, type, units, label=label, properties=properties)
         self.__nodes[node_uri] = node
         return node
 
