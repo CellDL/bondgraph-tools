@@ -18,6 +18,18 @@
 #
 #===============================================================================
 
+BONDGRAPH_NODE_TYPES = [
+    'bg:OneNode',
+    'bg:OneResistanceNode',
+    'bg:ResistanceNode',
+    'bg:StorageNode',
+    'bg:ZeroNode',
+    'bg:ZeroStorageNode',
+]
+
+#===============================================================================
+#===============================================================================
+
 SPEC_PREFIXES = """
 PREFIX : <#>
 PREFIX bg: <http://celldl.org/ontologies/bond-graph#>
@@ -69,14 +81,6 @@ ORDER BY ?node"""
 
 #===============================================================================
 
-BONDGRAPH_NODE_TYPES = [
-    'bg:OneNode',
-    'bg:OneResistanceNode',
-    'bg:ResistanceNode',
-    'bg:StorageNode'
-    'bg:ZeroNode'
-    'bg:ZeroStorageNode'
-]
 SPECIFICATION_NODE_VALUES = f"""
 %PREFIXES%
 
@@ -96,9 +100,9 @@ ORDER BY ?node"""
 
 TEMPLATE_PREFIXES = """
 PREFIX : <http://celldl.org/templates/vascular#>
-PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX bg: <http://celldl.org/ontologies/bond-graph#>
 PREFIX cdt: <https://w3id.org/cdt/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX tpl: <http://celldl.org/ontologies/model-template#>
 """
 

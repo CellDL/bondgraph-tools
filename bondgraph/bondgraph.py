@@ -209,6 +209,7 @@ class BondgraphModel:
 
     @property
     def uri(self):
+    #=============
         return self.__uri
 
     def add_node(self, node_uri: URIRef, type: URIRef, units: Literal,
