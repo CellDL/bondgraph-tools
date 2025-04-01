@@ -47,15 +47,15 @@ class BondgraphNode:
         self.__properties = properties if properties is not None else {}
         self.__quantities: dict[URIRef, Quantity] = {}
         self.__quantity_values: dict[URIRef, tuple[URIRef, float]] = {}
-        self.__sources: set[BondgraphNode] = set()
-        self.__targets: set[BondgraphNode] = set()
+        self.__sources: list[BondgraphNode] = []
+        self.__targets: list[BondgraphNode] = []
         self.__value: Optional[Value] = None
 
     @property
     def delta(self) -> str:
     #======================
-        inputs = '+'.join([n.name for n in self.__sources])
-        outputs = '-'.join([n.name for n in self.__targets])
+        inputs = '+'.join(list({n.name for n in self.__sources}))
+        outputs = '-'.join(list({n.name for n in self.__targets}))
         if inputs != '' and outputs != '':
             return f'{inputs}-{outputs}'
         elif inputs != '':
@@ -117,11 +117,11 @@ class BondgraphNode:
 
     def add_source(self, source: Self):
     #==================================
-        self.__sources.add(source)
+        self.__sources.append(source)
 
     def add_target(self, target: Self):
     #==================================
-        self.__targets.add(target)
+        self.__targets.append(target)
 
     def copy(self) -> 'BondgraphNode':
     #=================================
