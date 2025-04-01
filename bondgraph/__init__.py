@@ -36,6 +36,10 @@ from .template import TemplateRegistry
 
 #===============================================================================
 
+__version__ = "1.0.0"
+
+#===============================================================================
+
 class ModelLoader:
     def __init__(self, bg_spec: str, registry: TemplateRegistry):
         self.__rdf_graph = rdflib.Graph(identifier=f'{Path(bg_spec).absolute().as_uri()}')

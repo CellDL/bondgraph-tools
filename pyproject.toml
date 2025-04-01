@@ -1,7 +1,7 @@
 [project]
 name = "bondgraph"
-version = "0.0.1"
-description = ""
+version = "1.0.0"
+description = "Generate CellML from bondgraph templates"
 authors = [
     { name = "David Brooks", email = "<d.brooks@auckland.ac.nz>"}
 ]
