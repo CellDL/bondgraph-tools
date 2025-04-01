@@ -23,6 +23,7 @@ from typing import Any, Optional, Self, TYPE_CHECKING
 
 #===============================================================================
 
+import networkx as nx
 from rdflib import Literal, URIRef
 
 #===============================================================================
