@@ -272,7 +272,7 @@ class BondgraphModel:
     #============================================
         return node_uri in self.__nodes
 
-    def __get_uri(self) -> URIRef:
+    def __new_uri(self) -> URIRef:
     #=============================
         self.__last_id += 1
         return self.__ns_map.uri(f':ID-{self.__last_id:08d}')
@@ -286,14 +286,14 @@ class BondgraphModel:
                 if node.uri in template_ports:
                     node_uri = template_ports[node.uri]
                 else:
-                    node_uri = self.__get_uri()
+                    node_uri = self.__new_uri()
                 uri_remap[node.uri] = node_uri
                 if node_uri not in self.__nodes:
                     new_node = node.copy()
                     new_node.set_uri(node_uri)
                     self.__nodes[node_uri] = new_node
             for bond in template.model.__bonds.values():
-                self.add_bond(self.__get_uri(), uri_remap[bond.nodes[0].uri], uri_remap[bond.nodes[1].uri])
+                self.add_bond(self.__new_uri(), uri_remap[bond.nodes[0].uri], uri_remap[bond.nodes[1].uri])
 
     def nx_graph(self) -> nx.DiGraph:
     #================================
