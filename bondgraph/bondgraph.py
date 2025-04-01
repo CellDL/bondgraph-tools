@@ -41,6 +41,8 @@ class BondgraphNode:
         self.__units = Units.from_ucum(units)
         self.__quantities: dict[URIRef, Quantity] = {}
         self.__quantity_values: dict[URIRef, tuple[URIRef, float]] = {}
+        self.__sources: set[BondgraphNode] = set()
+        self.__targets: set[BondgraphNode] = set()
         self.__value: Optional[Value] = None
 
     @property
@@ -52,8 +54,13 @@ class BondgraphNode:
         return [(self.__quantities[quantity], name_value[0].rsplit('#')[-1], name_value[1])
                     for quantity, name_value in self.__quantity_values.items()]
 
+    @property
+    def sources(self):
+        return self.__sources
 
     @property
+    def targets(self):
+        return self.__targets
 
     @property
     def type(self):
@@ -73,6 +80,14 @@ class BondgraphNode:
     def add_quantity(self, quantity: Quantity):
     #==========================================
         self.__quantities[quantity.uri] = quantity
+
+    def add_source(self, source: Self):
+    #==================================
+        self.__sources.add(source)
+
+    def add_target(self, target: Self):
+    #==================================
+        self.__targets.add(target)
 
     def set_quantity_value(self, quantity_uri: URIRef, name: URIRef, value: Literal):   # "100 kPa.s/L"^^cdt:ucum
     #================================================================================
@@ -99,6 +114,8 @@ class BondgraphBond:
     def __init__(self, uri: URIRef, node_0: BondgraphNode, node_1: BondgraphNode):
         self.__uri = uri
         self.__nodes = (node_0, node_1)
+        node_1.add_source(node_0)
+        node_0.add_target(node_1)
 
     @property
     def nodes(self):
