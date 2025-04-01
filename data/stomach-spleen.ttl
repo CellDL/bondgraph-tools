@@ -101,7 +101,7 @@
 :v_CeliacA
     bg:quantities [
         bg:quantity lib:resistance ;
-        rdfs:label :R_CeliacA ;
+        bg:name :R_CeliacA ;
         bg:value "100 kPa.s/L"^^cdt:ucum
     ] .
 
