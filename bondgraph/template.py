@@ -30,10 +30,9 @@ from rdflib import Literal, URIRef
 from .bondgraph import BondgraphModel, BondgraphNode
 
 from .queries import BONDGRAPH_MODEL_BONDS, BONDGRAPH_MODEL_PARAMETERS, BONDGRAPH_MODEL_QUERY, BONDGRAPH_MODEL_STATES
+from .quantity import Quantity
 from .queries import TEMPLATE_QUERY, TEMPLATE_PORTS_QUERY
 from .queries import QUANTITIES_QUERY
-
-from .units import UCUMUnit
 
 #===============================================================================
 
@@ -42,26 +41,6 @@ from .namespaces import NamespaceMap
 
 NS_MAP = (NamespaceMap.fromSparqlPrefixes(TEMPLATE_PREFIXES)
                       .merge_namespaces(NamespaceMap.fromSparqlPrefixes(SPEC_PREFIXES)))
-
-#===============================================================================
-
-class BondgraphQuantity:
-    def __init__(self, uri: URIRef, units: Literal, label: Optional[Literal]=None):
-        self.__uri = uri
-        self.__units = UCUMUnit(units)
-        self.__label = label if label is not None else NS_MAP.curie(uri)
-
-    @property
-    def label(self) -> Optional[str]:
-        return str(self.__label) if self.__label else None
-
-    @property
-    def units(self):
-        return str(self.__units)
-
-    @property
-    def uri(self):
-        return self.__uri
 
 #===============================================================================
 
@@ -97,7 +76,7 @@ class BondgraphTemplate:
 class TemplateRegistry:
     def __init__(self, template_file: str):
         self.__models: dict[URIRef, BondgraphModel] = {}
-        self.__quantities: dict[URIRef, BondgraphQuantity] = {}
+        self.__quantities: dict[URIRef, Quantity] = {}
         self.__templates: dict[URIRef, BondgraphTemplate] = {}
         self.load_templates(template_file)
 
@@ -174,7 +153,7 @@ class TemplateRegistry:
                 uri: URIRef = row[uri_key]                  # type: ignore
                 units: Literal = row.get(units_key)         # type: ignore
                 label: Optional[Literal] = row.get(label_key)   # type: ignore
-                self.__quantities[uri] = BondgraphQuantity(uri, units, label)
+                self.__quantities[uri] = Quantity(uri, units, label, variable)
 
     def __load_templates(self, rdf_graph: rdflib.Graph):
     #===================================================

@@ -26,10 +26,10 @@ from rdflib import Literal, URIRef
 
 #===============================================================================
 
-from .units import UCUMUnit
+from .quantity import Quantity, Units, Value
 
 if TYPE_CHECKING:
-    from .template import BondgraphQuantity, BondgraphTemplate
+    from .template import BondgraphTemplate
 
 #===============================================================================
 
@@ -38,41 +38,60 @@ class BondgraphNode:
         self.__uri = uri
         self.__type = type
         self.__label = label
-        self.__units = UCUMUnit(units) if units is not None else None
-        self.__parameters: list['BondgraphQuantity'] = []
-        self.__states: list['BondgraphQuantity'] = []
+        self.__units = Units.from_ucum(units)
+        self.__quantities: dict[URIRef, Quantity] = {}
+        self.__quantity_values: dict[URIRef, tuple[URIRef, float]] = {}
+        self.__value: Optional[Value] = None
 
     @property
     def label(self) -> Optional[str]:
         return str(self.__label) if self.__label else None
 
     @property
-    def parameters(self):
-        return self.__parameters
+    def quantity_values(self) -> list[tuple[Quantity, str, float]]:
+        return [(self.__quantities[quantity], name_value[0].rsplit('#')[-1], name_value[1])
+                    for quantity, name_value in self.__quantity_values.items()]
+
 
     @property
-    def states(self):
-        return self.__states
 
     @property
     def type(self):
         return self.__type
 
     @property
-    def units(self) -> Optional[str]:
-        return str(self.__units) if self.__units else None
+    def units(self) -> Units:
+        return self.__units
 
     @property
     def uri(self):
         return self.__uri
 
-    def add_state(self, state: 'BondgraphQuantity'):
-    #===============================================
-        self.__states.append(state)
+    def value(self):
+        return self.__value.value if self.__value is not None else None
 
-    def add_parameter(self, parameter: 'BondgraphQuantity'):
-    #=======================================================
-        self.__parameters.append(parameter)
+    def add_quantity(self, quantity: Quantity):
+    #==========================================
+        self.__quantities[quantity.uri] = quantity
+
+    def set_quantity_value(self, quantity_uri: URIRef, name: URIRef, value: Literal):   # "100 kPa.s/L"^^cdt:ucum
+    #================================================================================
+        if (quantity := self.__quantities.get(quantity_uri)) is not None:
+            new_value = Value(value)
+            if new_value.units != quantity.units:
+                raise TypeError(f"Value's units don't match Quantity's: {new_value.units} != {quantity.units}")
+            self.__quantity_values[quantity_uri] = (name, new_value.value)
+
+
+    def set_value(self, value: Literal):   # "100 kPa.s/L"^^cdt:ucum
+    #===================================
+        new_value = Value(value)
+        if new_value.units != self.__units:
+            raise TypeError(f"Value's units don't match nodes's: {new_value.units} != {self.__units}")
+        if self.__value is None:
+            self.__value = new_value
+        else:
+            self.__value.set_value(new_value.value)
 
 #===============================================================================
 
