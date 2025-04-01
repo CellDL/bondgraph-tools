@@ -28,19 +28,11 @@ from rdflib import Literal, URIRef
 #===============================================================================
 
 from .bondgraph import BondgraphModel, BondgraphNode
-
-from .queries import BONDGRAPH_MODEL_BONDS, BONDGRAPH_MODEL_PARAMETERS, BONDGRAPH_MODEL_QUERY, BONDGRAPH_MODEL_STATES
+from .definitions import NS_MAP
 from .quantity import Quantity
+from .queries import BONDGRAPH_MODEL_BONDS, BONDGRAPH_MODEL_QUANTITIES, BONDGRAPH_MODEL_QUERY
 from .queries import TEMPLATE_QUERY, TEMPLATE_PORTS_QUERY
 from .queries import QUANTITIES_QUERY
-
-#===============================================================================
-
-from .queries import SPEC_PREFIXES, TEMPLATE_PREFIXES
-from .namespaces import NamespaceMap
-
-NS_MAP = (NamespaceMap.fromSparqlPrefixes(TEMPLATE_PREFIXES)
-                      .merge_namespaces(NamespaceMap.fromSparqlPrefixes(SPEC_PREFIXES)))
 
 #===============================================================================
 

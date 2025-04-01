@@ -32,14 +32,12 @@ from rdflib import BNode, Literal, URIRef
 #===============================================================================
 
 from .bondgraph import BondgraphModel
-from .namespaces import NamespaceMap
-from .queries import SPECIFICATION_QUERY, SPEC_PREFIXES, TEMPLATE_PREFIXES
+from .definitions import NS_MAP
+from .queries import SPECIFICATION_QUERY
 from .template import TemplateRegistry
 
 #===============================================================================
 
-NS_MAP = (NamespaceMap.fromSparqlPrefixes(TEMPLATE_PREFIXES)
-                      .merge_namespaces(NamespaceMap.fromSparqlPrefixes(SPEC_PREFIXES)))
 
 #===============================================================================
 
