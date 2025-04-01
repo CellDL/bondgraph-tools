@@ -106,9 +106,9 @@ WHERE {{
     ?model a bg:Model .
     ?node
         a ?type ;
-        bg:model ?model .
+        bg:model ?model ;
+        bg:units ?units .
     OPTIONAL {{ ?node rdfs:label ?label }}
-    OPTIONAL {{ ?node bg:units ?units }}
     OPTIONAL {{ ?node bg:nodeSettings ?ns
         OPTIONAL {{ ?ns bg:location ?location }}
         OPTIONAL {{ ?ns bg:species ?species }}

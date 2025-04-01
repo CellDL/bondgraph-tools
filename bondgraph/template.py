@@ -94,8 +94,8 @@ class TemplateRegistry:
                 model_uri: URIRef = row[model_key]          # type: ignore
                 node_uri: URIRef = row[node_key]            # type: ignore
                 type: URIRef = row[type_key]                # type: ignore
+                units: Literal = row.get(units_key)         # type: ignore
                 label: Optional[Literal] = row.get(label_key)   # type: ignore
-                units: Optional[Literal] = row.get(units_key)   # type: ignore
                 properties = {str(k): NS_MAP.simplify(row[k]) for k in result.vars[5:] if k in row}
                 if type is not None:
                     properties['type'] = NS_MAP.curie(type)
