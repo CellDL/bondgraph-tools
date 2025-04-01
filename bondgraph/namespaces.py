@@ -22,7 +22,45 @@ from typing import Optional, Self
 
 #===============================================================================
 
+import lxml.etree as etree
 from rdflib import BNode, Literal, URIRef
+
+#===============================================================================
+
+"""
+Generate URIRefs for rdflib.
+"""
+class RDFNamespace:
+    def __init__(self, ns: str):
+        self.__ns = ns
+
+    def __str__(self):
+        return self.__ns
+
+    def __getattr__(self, attr: str='') -> URIRef:
+        return URIRef(f'{self.__ns}{attr}')
+
+#===============================================================================
+
+"""
+Generate URIs for lxml.etree.
+"""
+class XMLNamespace:
+    def __init__(self, ns: str):
+        self.__ns = ns
+
+    def __str__(self):
+        return self.__ns
+
+    def __call__(self, attr: str='') -> str:
+        return f'{{{self.__ns}}}{attr}'
+
+#===============================================================================
+
+RDFS = RDFNamespace('http://www.w3.org/2000/01/rdf-schema#')
+BG = RDFNamespace('http://celldl.org/ontologies/bond-graph#')
+CDT = RDFNamespace('https://w3id.org/cdt/')
+TPL = RDFNamespace('http://celldl.org/ontologies/model-template#')
 
 #===============================================================================
 
