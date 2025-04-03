@@ -1,5 +1,17 @@
 # Tools for working with RDF descriptions of bondgraphs
 
+## Constructing branching (vascular) bondgraph models from templates
+
+Two separate sets of RDF are used:
+
+1.  Template descriptions, such as [vascular-segment-template.ttl](./data/vascular-segment-template.ttl).
+2.  A model definition specifies how templates are connected and parameterised to form a model. 
+3.  Examples of using `vascular-segment-template.ttl` are:
+    1.  [single-segment.ttl](./data/single-segment.ttl) defines a single straight segment.
+    2.  [stomach-spleen.ttl](./data/stomach-spleen.ttl) defines a branching network representing stomach/spleen vasculature.
+
+More details are in the [notes](./docs/Notes.md).
+
 ### Installation pre-requisites
 
 * Python 3.12
