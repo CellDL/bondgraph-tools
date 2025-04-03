@@ -57,6 +57,21 @@ LAYOUT_METHODS = {
     'spring': nx.spring_layout,
 }
 
+
+LOCAL_STYLESHEET = """
+.bg-ZeroStorageNode rect {
+    fill: #E2F0D9 ;
+    stroke: red;
+    stroke-width: 5;
+}
+
+.bg-OneResistanceNode rect {
+    fill: #FFD966 ;
+    stroke: green;
+    stroke-width: 5;
+}
+"""
+
 #===============================================================================
 
 def _scaled_vertical_offset(x: float, delta: np.ndarray) -> np.ndarray:
@@ -76,9 +91,8 @@ def _grid_align(positions: dict) -> dict:
 class CellDLComponent:
     def __init__(self, id: str, centre: np.ndarray, properties: Optional[dict]=None):
         self.__id = id
-        if properties is None:
-            properties = {}
-        self.__label = properties.get('label', id)
+        self.__properties = properties if properties is not None else {}
+        self.__label = self.__properties.get('label', id)
         self.__centre = centre
         self.__corner_offsets = [
             np.array([ NODE_SIZE[0]/2,  NODE_SIZE[1]/2]),  # BR
@@ -157,9 +171,12 @@ class CellDLComponent:
 
     def svg(self) -> etree.Element:
     #==============================
-        svg = svg_element('g', {'id': self.__id, 'class': 'celldl-Component'})
+        classes = ['celldl-Component']
+        if (type := self.__properties.get('type')) is not None:
+            classes.append(type.replace(':', '-'))
+        svg = svg_element('g', {'id': self.__id, 'class': ' '.join(classes)})
         svg_subelement(svg, 'rect', {
-            'id': self.__id, 'class': 'celldl-Component',
+            'class': 'celldl-Component',
             'x': str(self.__centre[0] + self.__corner_offsets[2][0]),
             'y': str(self.__centre[1] + self.__corner_offsets[2][1]),
             'width': str(NODE_SIZE[0]), 'height': str(NODE_SIZE[1])
@@ -215,7 +232,7 @@ class Graph2CellDL:
         connection_id = self.__get_id()
         path = svg_subelement(self.__diagram, 'path', {
             'id': connection_id,
-            'class': 'celldl-Connection arrow',
+            'class': 'celldl-Connection bondgraph arrow',
             'd': f'M{source_point[0]} {source_point[1]}L{target_point[0]} {target_point[1]}',
         })
         self.__celldl.add_connection(connection_id, source.id, target.id)
@@ -245,6 +262,7 @@ class Graph2CellDL:
             })
         stylesheets = [CellDLStylesheet]
         stylesheets.append(BondgraphStylesheet)
+        stylesheets.append(LOCAL_STYLESHEET)
         style.text = '\n'.join(stylesheets)
         self.__diagram = svg_subelement(self.__svg, 'g', {
             'id': DIAGRAM_LAYER,
