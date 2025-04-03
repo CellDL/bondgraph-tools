@@ -20,9 +20,13 @@
 
 from celldltools.graph2celldl import Graph2CellDL
 
-from bondgraph.bondgraph import load_model, __version__
+from bondgraph.bondgraph import load_model
 from bondgraph.bondgraph.cellml import CellMLModel
 from bondgraph.bondgraph.template import TemplateRegistry
+
+#===============================================================================
+
+__version__ = '1.2.0'
 
 #===============================================================================
 
