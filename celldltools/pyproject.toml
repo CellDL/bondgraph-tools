@@ -1,7 +1,7 @@
 [project]
 name = "celldltools"
-version = "0.0.1"
-description = ""
+version = "1.0.0"
+description = "Tools for working with CellDL"
 authors = [
     { name = "David Brooks", email = "d.brooks@auckland.ac.nz"}
 ]
@@ -14,10 +14,7 @@ dependencies = [
     "lxml (>=5.3.1,<6.0.0)",
 ]
 
-[tool.poetry]
-package-mode = false
-
-[tool.pyright]
-pythonVersion = "3.12"
-venvPath = "."
-venv = "tools/.venv"
+[tool.poetry-monoranger-plugin]
+enabled = true
+monorepo-root = "../"
+version-pinning-rule = '=='  # Choose between "==", "~", "^", ">=,<"

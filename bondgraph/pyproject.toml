@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [tool.poetry.dependencies]
-celldltools = { path = "../../CellDL-electron/tools" }
+celldltools = { path = "../celldltools", develop = true }
 
 [tool.poetry-monoranger-plugin]
 enabled = true
