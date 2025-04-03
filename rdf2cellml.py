@@ -32,10 +32,10 @@ def main():
 
     parser = argparse.ArgumentParser(description='Generate CellML for a bondgraph model specified in RDF')
     parser.add_argument('--version', action='version', version=f'Version {__version__}')
-    parser.add_argument('--celldl', metavar='CELLDL_FILE', help='The name of the resulting CellDL (SVG) output file. Optional')
+    parser.add_argument('--celldl', metavar='CELLDL_FILE', help='The name for the CellDL (SVG) output file. Optional')
     parser.add_argument('template', metavar='TEMPLATE_FILE', help='A template file defining bondgraph components in RDF')
     parser.add_argument('model', metavar='MODEL_FILE', help='The RDF definition of a model')
-    parser.add_argument('cellml', metavar='CELLML_FILE', help='The name of the resulting CellML file')
+    parser.add_argument('cellml', metavar='CELLML_FILE', help='The name for the resulting CellML file')
     args = parser.parse_args()
 
     registry = TemplateRegistry(args.template)
