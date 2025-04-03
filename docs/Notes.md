@@ -23,8 +23,8 @@ Shape expressions are used to validate RDF structure:
 1.  [template.shex](../data/shex/template.shex) for template descriptions.
 2.  [bgmodel.shex](../data/shex/bgmodel.shex) for model definitions. 
 
-[!NOTE]
-The above shape expression files are out-of-date and can't be used to validate the examples.
+> [!NOTE]
+> The above shape expression files are out-of-date and can't be used to validate the examples.
 
 ### Validating RDF against shape expressions
 
