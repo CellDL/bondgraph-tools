@@ -1,5 +1,11 @@
 # Notes
 
+## 19 March 2025
+
+### Circulatory Autogen
+
+A project to generate and calibrate CellML circulatory system models from an array of module/vessel names and connections: [GitHub](https://github.com/FinbarArgus/circulatory_autogen).
+
 ## 16 January 2025
 
 ### Constructing branching (vascular) models from templates.
