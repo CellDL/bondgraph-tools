@@ -1,8 +1,8 @@
-from graph2celldl import Graph2CellDL
+from celldltools.graph2celldl import Graph2CellDL
 
-from bondgraph import load_model
-from bondgraph.cellml import CellMLModel
-from bondgraph.template import TemplateRegistry
+from bondgraph.bondgraph import load_model
+from bondgraph.bondgraph.cellml import CellMLModel
+from bondgraph.bondgraph.template import TemplateRegistry
 
 
 template = './data/vascular-segment-template.ttl'
