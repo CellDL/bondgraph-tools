@@ -12,13 +12,19 @@ A project to generate and calibrate CellML circulatory system models from an arr
 
 There are two separate sets of RDF:
 
-1.  Template descriptions, such as [template.ttl](../models/template.ttl), which is a description of the basic model below, are intended to be used by model generation tools for both validation and generation.
-2.  Model definitions, such as [vascular.ttl](../models/vascular.ttl), which uses `template.ttl` to define both a straight segment and a branch in a vascular network. The example only specifies interconnections, but would normally also specify model parameters and states (e.g. from ApiNATOMY).
+1.  Template descriptions, such as [vascular-segment-template.ttl](../data/vascular-segment-template.ttl), which is a description of the basic model below, are intended to be used
+    by model generation tools for both validation and generation.
+2.  Model definitions specify both template interconnections and model parameters and states (quantities). The examples [single-segment.ttl](../data/single-segment.ttl)
+    and [stomach-spleen.ttl](../data/stomach-spleen.ttl) use `vascular-segment-template.ttl` to respectively define a single segment 
+    and a branching network (representing the stomach/spleen vasculature).
 
 Shape expressions are used to validate RDF structure:
 
-1.  [template.shex](../shex/template.shex) for template descriptions.
-2.  [bgmodel.shex](../shex/bgmodel.shex) for model definitions. 
+1.  [template.shex](../data/shex/template.shex) for template descriptions.
+2.  [bgmodel.shex](../data/shex/bgmodel.shex) for model definitions. 
+
+[!NOTE]
+The above shape expression files are out-of-date and can't be used to validate the examples.
 
 ### Validating RDF against shape expressions
 
