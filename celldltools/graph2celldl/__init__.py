@@ -232,7 +232,7 @@ class Graph2CellDL:
         connection_id = self.__get_id()
         path = svg_subelement(self.__diagram, 'path', {
             'id': connection_id,
-            'class': 'celldl-Connection bondgraph arrow',
+            'class': 'celldl-Connection bondgraph electrical arrow',
             'd': f'M{source_point[0]} {source_point[1]}L{target_point[0]} {target_point[1]}',
         })
         self.__celldl.add_connection(connection_id, source.id, target.id)
