@@ -88,7 +88,7 @@ class CellMLModel:
     def __init__(self, name: str, time_var:str='t', time_units: Units=Units('s')):
         self.__name = name
         self.__time_var = time_var
-        self.__cellml = cellml_element('model', name=name, nsmap={None: str(CELLML_NS)})
+        self.__cellml = cellml_element('model', name=name.replace(' ', '_').replace('-', '_'), nsmap={None: str(CELLML_NS)})
         self.__main = cellml_subelement(self.__cellml, 'component', name='main')
         self.__known_units: list[str] = []
         self.__add_units(time_units)
