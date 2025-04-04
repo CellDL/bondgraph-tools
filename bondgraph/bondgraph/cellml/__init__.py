@@ -88,11 +88,11 @@ class CellMLModel:
     def __init__(self, name: str, time_var:str='t', time_units: Units=Units('s')):
         self.__name = name
         self.__time_var = time_var
+        self.__time_units = time_units
+        self.__have_time_var: bool = False
         self.__cellml = cellml_element('model', name=name.replace(' ', '_').replace('-', '_'), nsmap={None: str(CELLML_NS)})
         self.__main = cellml_subelement(self.__cellml, 'component', name='main')
         self.__known_units: list[str] = []
-        self.__add_units(time_units)
-        self.__add_variable(time_var, time_units)
 
     @property
     def name(self):
@@ -103,6 +103,11 @@ class CellMLModel:
     #================================================
         equations = BONDGRAPH_EQUATIONS.get(node.type, [])
         if len(equations):
+            for equation in equations:
+                if 'TIME' in equation:
+                    self.__add_time_var()
+                    TIME = sympy.Symbol(self.__time_var)
+                    break
             local_names = locals()
             n = 0
             node_delta = []
@@ -116,7 +121,6 @@ class CellMLModel:
             node_delta = ' '.join(node_delta)
             for quantity, name, value in node.quantity_values:
                 local_names[quantity.variable] = sympy.Symbol(name)
-            TIME = sympy.Symbol(self.__time_var)
             NODE = sympy.Symbol(node.name)
             mathml_printer = MathMLContentPrinter({'disable_split_super_sub': True})
             mathml = ['<math xmlns="http://www.w3.org/1998/Math/MathML">']
@@ -132,6 +136,13 @@ class CellMLModel:
             self.__add_variable(name, quantity.units, value)
         # Assign equation variables now that quantities have names
         self.__add_equations(node)
+
+    def __add_time_var(self):
+    #========================
+        if not self.__have_time_var:
+            self.__add_units(self.__time_units)
+            self.__add_variable(self.__time_var, self.__time_units)
+            self.__have_time_var = True
 
     def __add_units(self, units: Units):
     #===================================
