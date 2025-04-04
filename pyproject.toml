@@ -1,5 +1,6 @@
 [project]
 name = "bondgraph-tools"
+version = "1.2.1"
 description = "Tools for working with RDF descriptions of bondgraphs"
 authors = [
     { name = "David Brooks", email = "<d.brooks@auckland.ac.nz>"}
