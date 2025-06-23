@@ -34,16 +34,18 @@ from .celldl import CellDLGraph
 from .definitions import svg_element, svg_subelement, SVG_NS
 from .definitions import CELLDL_DEFINITIONS_ID, CELLDL_LAYER_CLASS
 from .definitions import CELLDL_METADATA_ID, CELLDL_STYLESHEET_ID, DIAGRAM_LAYER
-from .definitions import BondgraphStylesheet, BondgraphSvgDefinitions, CellDLStylesheet
+from .definitions import CONNECTION_STROKE_WIDTH, StyleDefinitions
 
 #===============================================================================
 
-SVG_WIDTH  = 2400
-SVG_HEIGHT = 1600
+# Can override when creating a Graph2CellDL instance
+
+DIAGRAM_SIZE = (2400, 1600)
+NODE_SIZE    = (60, 40)
+
+#===============================================================================
 
 GRID_SPACING = 10
-
-NODE_SIZE = (60, 40)
 
 SPLIT_TEXT_LEN = 10
 
@@ -89,16 +91,17 @@ def _grid_align(positions: dict) -> dict:
 #===============================================================================
 
 class CellDLComponent:
-    def __init__(self, id: str, centre: np.ndarray, properties: Optional[dict]=None):
+    def __init__(self, id: str, centre: np.ndarray, properties: Optional[dict]=None, node_size=NODE_SIZE):
         self.__id = id
         self.__properties = properties if properties is not None else {}
         self.__label = self.__properties.get('label', id)
         self.__centre = centre
+        self.__node_size = node_size
         self.__corner_offsets = [
-            np.array([ NODE_SIZE[0]/2,  NODE_SIZE[1]/2]),  # BR
-            np.array([ NODE_SIZE[0]/2, -NODE_SIZE[1]/2]),  # TR
-            np.array([-NODE_SIZE[0]/2, -NODE_SIZE[1]/2]),  # TL
-            np.array([-NODE_SIZE[0]/2,  NODE_SIZE[1]/2])   # BL
+            np.array([ node_size[0]/2,  node_size[1]/2]),  # BR
+            np.array([ node_size[0]/2, -node_size[1]/2]),  # TR
+            np.array([-node_size[0]/2, -node_size[1]/2]),  # TL
+            np.array([-node_size[0]/2,  node_size[1]/2])   # BL
         ]
 
     @property
@@ -179,7 +182,7 @@ class CellDLComponent:
             'class': 'celldl-Component',
             'x': str(self.__centre[0] + self.__corner_offsets[2][0]),
             'y': str(self.__centre[1] + self.__corner_offsets[2][1]),
-            'width': str(NODE_SIZE[0]), 'height': str(NODE_SIZE[1])
+            'width': str(self.__node_size[0]), 'height': str(self.__node_size[1])
         })
         label = self.__label
         # first split on '\n'
@@ -207,16 +210,24 @@ class CellDLComponent:
 #===============================================================================
 
 class Graph2CellDL:
-    def __init__(self, G: nx.DiGraph, layout_method: str='bfs'):
+    def __init__(self, G: nx.DiGraph, layout_method: str='bfs', stylesheet: str=LOCAL_STYLESHEET,
+            diagram_size=DIAGRAM_SIZE, node_size=NODE_SIZE, connection_stroke_width=CONNECTION_STROKE_WIDTH):
         self.__celldl = CellDLGraph()
         self.__last_id = 0
+        self.__stylesheet = stylesheet
+        self.__diagram_size = diagram_size
+        self.__node_size = node_size
+        self.__style_definitions = StyleDefinitions(connection_stroke_width = connection_stroke_width)
+
         self.__create_diagram()
+
+        ## need to separately layout disconnected subgraphs in G...
         layout_params = [G]
         if layout_method == 'bfs':
             layout_params.append(list(G.nodes)[0])
         self.__positions = _grid_align(nx.rescale_layout_dict(
             LAYOUT_METHODS.get(layout_method, nx.arf_layout)(*layout_params),
-            scale=min(SVG_WIDTH, SVG_HEIGHT)/2))
+            scale=min(self.__diagram_size[0], self.__diagram_size[1])/2))
         self.__components: dict = {}
         for node, properties in G.nodes(data=True):
             self.__add_component(node, properties)
@@ -230,16 +241,17 @@ class Graph2CellDL:
         source_point = source.boundary_intersection(target.centre)
         target_point = target.boundary_intersection(source.centre)
         connection_id = self.__get_id()
+        domain = properties.get('domain', '')
         path = svg_subelement(self.__diagram, 'path', {
             'id': connection_id,
-            'class': 'celldl-Connection bondgraph electrical arrow',
+            'class': f'celldl-Connection bondgraph {domain} arrow',
             'd': f'M{source_point[0]} {source_point[1]}L{target_point[0]} {target_point[1]}',
         })
         self.__celldl.add_connection(connection_id, source.id, target.id)
 
     def __add_component(self, node, properties):
     #===========================================
-        component = CellDLComponent(self.__get_id(), self.__positions[node], properties)
+        component = CellDLComponent(self.__get_id(), self.__positions[node], properties, node_size=self.__node_size)
         self.__diagram.append(component.svg())
         self.__celldl.add_component(component.id)
         self.__components[node] = component
@@ -247,7 +259,7 @@ class Graph2CellDL:
     def __create_diagram(self):
     #==========================
         self.__svg = svg_element('svg', nsmap={None: str(SVG_NS)},
-            viewBox=f'{-int(0.6*SVG_WIDTH)} {-int(0.6*SVG_HEIGHT)} {int(1.2*SVG_WIDTH)} {int(1.2*SVG_HEIGHT)}'
+            viewBox=f'{-int(0.6*self.__diagram_size[0])} {-int(0.6*self.__diagram_size[1])} {int(1.2*self.__diagram_size[0])} {int(1.2*self.__diagram_size[1])}'
         )
         self.__metadata_element = svg_subelement(self.__svg, 'metadata', {
             'id': CELLDL_METADATA_ID,
@@ -256,13 +268,13 @@ class Graph2CellDL:
         defs = svg_subelement(self.__svg, 'defs', {
             'id': CELLDL_DEFINITIONS_ID
         })
-        defs.extend(BondgraphSvgDefinitions)
+        defs.extend(self.__style_definitions.BondgraphSvgDefinitions)
         style = svg_subelement(defs, 'style', {
             'id': CELLDL_STYLESHEET_ID
             })
-        stylesheets = [CellDLStylesheet]
-        stylesheets.append(BondgraphStylesheet)
-        stylesheets.append(LOCAL_STYLESHEET)
+        stylesheets = [self.__style_definitions.CellDLStylesheet]
+        stylesheets.append(self.__style_definitions.BondgraphStylesheet)
+        stylesheets.append(self.__stylesheet)
         style.text = '\n'.join(stylesheets)
         self.__diagram = svg_subelement(self.__svg, 'g', {
             'id': DIAGRAM_LAYER,
