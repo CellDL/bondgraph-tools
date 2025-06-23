@@ -1,6 +1,6 @@
 [project]
 name = "celldltools"
-version = "1.0.0"
+version = "1.4.1"
 description = "Tools for working with CellDL"
 authors = [
     { name = "David Brooks", email = "d.brooks@auckland.ac.nz"}
